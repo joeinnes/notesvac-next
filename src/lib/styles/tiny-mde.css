@@ -1,0 +1,141 @@
+.TinyMDE {
+	@apply h-full;
+}
+
+
+.TMBlankLine {
+	@apply h-6;
+}
+
+.TMH1,
+.TMSetextH1 {
+  @apply text-2xl font-bold leading-6 mb-2;
+	
+}
+
+.TMSetextH1 {
+	@apply mb-0;
+}
+
+.TMSetextH1Marker {
+	@apply mb-2;
+}
+
+.TMH2,
+.TMSetextH2 {
+	@apply text-xl font-bold mb-1;
+}
+
+.TMMark_TMCode {
+  @apply text-sm;
+	font-family: monospace;
+}
+
+.TMFencedCodeBacktick,
+.TMFencedCodeTilde,
+.TMIndentedCode,
+.TMCode {
+	font-family: monospace;
+	@apply text-sm bg-gray-50;
+}
+
+.TMCodeFenceBacktickOpen,
+.TMCodeFenceTildeOpen {
+  @apply text-sm border-b border-gray-200;
+	font-family: monospace;
+	
+}
+
+.TMCodeFenceBacktickClose,
+.TMCodeFenceTildeClose {
+	@apply text-sm border-t border-gray-200;
+	font-family: monospace;
+	
+}
+
+.TMInfoString {
+	color: #0000ff;
+}
+
+.TMCode {
+  @apply border border-gray-200;
+	
+}
+
+.TMBlockquote {
+  @apply border-l-4 border-gray-200 pl-2 ml-2;
+	font-style: italic;
+}
+
+.TMMark {
+	@apply text-gray-400
+}
+
+.TMMark_TMH1,
+.TMMark_TMH2 {
+	@apply text-primary-400;
+}
+
+.TMMark_TMUL,
+.TMMark_TMOL {
+	@apply text-primary-400 ml-2;
+}
+
+.TMImage {
+	text-decoration: underline;
+	text-decoration-color: #00ff00;
+}
+
+.TMLink {
+  @apply text-primary-500 underline;
+	text-decoration: underline;
+
+}
+
+.TMLinkLabel {
+	text-decoration: underline;
+	font-family: monospace;
+}
+
+.TMLinkLabel_Definition,
+.TMLinkLabel_Valid {
+	color: #40c040;
+}
+
+.TMLinkLabel_Invalid {
+	color: #ff0000;
+}
+
+.TMLinkTitle {
+	font-style: italic;
+}
+
+.TMLinkDestination,
+.TMAutolink {
+  @apply text-primary-500 underline;
+}
+
+.TMHR {
+	position: relative;
+}
+
+.TMHR:before {
+	content: '';
+	position: absolute;
+	bottom: 50%;
+	left: 40%;
+	border-bottom: 2px solid #808080;
+	width: 20%;
+	z-index: 0;
+}
+
+.TMHTML,
+.TMHTMLBlock {
+	font-family: monospace;
+	font-size: 0.9em;
+	color: #8000ff;
+}
+
+.TMHTMLBlock {
+	color: #6000c0;
+}
