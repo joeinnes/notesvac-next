@@ -3,8 +3,6 @@
 	import { deleteDb, getDb } from '$lib/db';
 	import { db } from '$lib/db/db.svelte';
 	import { page } from '$app/stores';
-	import type { ChangeEventHandler } from 'svelte/elements';
-	import { ConsoleLogWriter } from 'drizzle-orm';
 	let { user } = $derived($page.data);
 	let avatar: File | null = $state(null);
 	let avatarPreview: string | null = $state('');

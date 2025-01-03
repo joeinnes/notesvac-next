@@ -5,7 +5,9 @@
 	import type { PageData } from './$types';
 	import { db } from '$lib/db/db.svelte';
 	import { goto } from '$app/navigation';
+	import { getText } from '$lib/utils/get-text';
 	let { data }: { data: PageData } = $props();
+	let { user } = $derived(data);
 	let dialog: HTMLDialogElement | undefined = $state();
 
 	const { id } = $derived(data);
@@ -70,6 +72,7 @@
 		});
 		note.id = noteToInsert.id;
 		editor?.setSelection(anchor || { row: 0, col: 0 }, null);
+		return;
 	};
 
 	const debouncedSave = debounce(() => {
@@ -123,15 +126,26 @@
 		</div>
 
 		<div class="flex justify-end gap-2">
-			<button
-				type="button"
-				class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
-				onclick={() => {
-					dialog?.showModal();
-				}}
-			>
-				Upload Some Handwriting
-			</button>
+			{#if (user?.handwriting_api_choice === 'GCP' && user.gcp_api_key) || (user?.handwriting_api_choice === 'ChatGPT' && user.openai_api_key)}
+				<button
+					type="button"
+					class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+					onclick={() => {
+						dialog?.showModal();
+					}}
+				>
+					Upload Some Handwriting
+				</button>
+			{:else}
+				<button
+					type="button"
+					class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+					disabled
+					title="You need to set up an API key in your settings to use this feature."
+				>
+					Upload Some Handwriting
+				</button>
+			{/if}
 			<button
 				type="button"
 				class="rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
@@ -163,7 +177,35 @@
 			</div>
 			<input type="file" bind:files class="hidden" name="image" />
 		</label>
-		<form method="dialog" class="text-end">
+		<form
+			method="dialog"
+			class="text-end"
+			onsubmit={(e) => {
+				e.preventDefault();
+				if (!user) return;
+				const apiKey =
+					user.handwriting_api_choice === 'GCP' ? user.gcp_api_key : user.openai_api_key;
+				if (!apiKey) return;
+				getText(
+					user.handwriting_api_choice || 'GCP',
+					apiKey,
+					imagePreview.split('data:image/jpeg;base64,')[1]
+				)
+					.then(async (res) => {
+						await saveNote();
+						const content = editor?.getContent();
+						editor?.setContent((content ? content + '\n\n' : '') + res?.text || '');
+						note.keywords = res?.keywords || '';
+						note.summary = res?.summary || '';
+						await saveNote();
+						dialog?.close();
+					})
+					.catch((e) => {
+						console.error(e);
+						dialog?.close();
+					});
+			}}
+		>
 			<button
 				class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
 				>OK</button
