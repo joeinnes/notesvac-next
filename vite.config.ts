@@ -17,5 +17,10 @@ export default defineConfig({
 	],
 	optimizeDeps: {
 		exclude: ['sqlocal']
+	},
+	build: {
+		rollupOptions: {
+			external: ['sharp']
+		}
 	}
 });

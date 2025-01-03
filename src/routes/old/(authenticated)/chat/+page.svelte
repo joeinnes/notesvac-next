@@ -19,8 +19,6 @@
 
 	let cw = $state(0);
 	let sw = $state(0);
-	$inspect(cw);
-	$inspect(sw);
 </script>
 
 {#snippet chatBubble(message: { isUser: boolean; message: string })}
@@ -39,7 +37,7 @@
 
 		<!-- Card -->
 		<div
-			class="space-y-3 rounded-2xl border border-border {message.isUser
+			class="border-border space-y-3 rounded-2xl border {message.isUser
 				? 'bg-primary text-primary-foreground'
 				: 'bg-card text-card-foreground'} p-4"
 		>
@@ -56,5 +54,5 @@
 		{@render chatBubble(message)}
 	{/each}
 
-	<Textarea class="w-full bg-card text-card-foreground" bind:value={newMessage} />
+	<Textarea class="bg-card text-card-foreground w-full" bind:value={newMessage} />
 </ul>

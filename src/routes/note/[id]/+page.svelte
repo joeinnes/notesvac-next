@@ -3,11 +3,10 @@
 	import debounce from 'lodash.debounce';
 	import { Editor, type CursorPosition } from 'tiny-markdown-editor';
 	import type { PageData } from './$types';
-
 	import { db } from '$lib/db/db.svelte';
 	import { goto } from '$app/navigation';
-
 	let { data }: { data: PageData } = $props();
+	let dialog: HTMLDialogElement | undefined = $state();
 
 	const { id } = $derived(data);
 	let note: {
@@ -25,7 +24,6 @@
 	let loading = $state(true);
 
 	$effect(() => {
-		console.log('refetch');
 		if (db?.db && id && id !== 'new' && editor) {
 			db.db
 				.selectFrom('note')
@@ -51,7 +49,6 @@
 
 	let editor: Editor | undefined = $state();
 	let anchor: CursorPosition | null | undefined = $state();
-	$inspect(anchor);
 
 	const saveNote = async () => {
 		if (!note || !db?.db) return;
@@ -71,7 +68,6 @@
 			keepFocus: true,
 			invalidateAll: true
 		});
-		// invalidate('/note');
 		note.id = noteToInsert.id;
 		editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 	};
@@ -93,6 +89,29 @@
 			}
 		};
 	};
+	let imagePreview: string = $state('');
+	let files: FileList | undefined = $state();
+	import { resizeImage } from '$lib/utils/resize-image';
+	let resizedFile = $state();
+	$effect(() => {
+		let image = files ? files[0] : null;
+		if (!files || !image) {
+			imagePreview = '';
+			return;
+		}
+		const reader = new FileReader();
+		reader.onload = () => {
+			imagePreview = reader.result as string;
+		};
+		reader.readAsDataURL(image);
+	});
+	$effect(() => {
+		resizeImage(imagePreview)
+			.then((resized) => {
+				resizedFile = resized;
+			})
+			.catch((e) => console.error(e));
+	});
 </script>
 
 <form>
@@ -107,6 +126,9 @@
 			<button
 				type="button"
 				class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+				onclick={() => {
+					dialog?.showModal();
+				}}
 			>
 				Upload Some Handwriting
 			</button>
@@ -122,3 +144,36 @@
 	<input type="hidden" bind:value={note.keywords} />
 	<input type="hidden" bind:value={note.summary} />
 </form>
+
+<dialog bind:this={dialog} class="mx-auto rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
+	<div class="relative p-6">
+		<h3 class="text-lg font-medium text-secondary-900">
+			Upload a photo for handwriting recognition
+		</h3>
+		<div class="mt-2 text-sm text-secondary-500">
+			This will use your API key and will consume credits for the image processing. You will get
+			better results with a portrait image.
+		</div>
+		<label>
+			<div class="bg-primary rounded-xl p-2">
+				<div
+					class="border-primary-foreground bg-primary aspect-[3/4] w-[3/4] rounded-xl border-4 border-dashed sm:w-full sm:max-w-xl"
+					style="background-image: url({imagePreview}); background-size: contain; background-position: center; background-repeat: no-repeat;"
+				></div>
+			</div>
+			<input type="file" bind:files class="hidden" name="image" />
+		</label>
+		<form method="dialog" class="text-end">
+			<button
+				class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+				>OK</button
+			>
+		</form>
+	</div>
+</dialog>
+
+<style lang="postcss">
+	::backdrop {
+		@apply bg-secondary-700/50;
+	}
+</style>
