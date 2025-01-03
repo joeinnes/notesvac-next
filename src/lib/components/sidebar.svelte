@@ -6,8 +6,7 @@
 	dayjs.extend(relativeTime);
 
 	import Icon from '$lib/icon/Icon.svelte';
-
-	import { deleteDb, getDb } from '$lib/db';
+	import Settings from 'lucide-svelte/icons/settings';
 
 	const { notes, user } = $derived($page.data);
 
@@ -23,7 +22,10 @@
 </script>
 
 <div class="flex">
-	<div class="min-w-[50px] border-e p-2"><Icon /></div>
+	<div class="flex h-full min-w-[50px] flex-col items-center justify-between border-e p-2">
+		<a href="/" class="w-full"><Icon /></a>
+		<a href="/settings"><Settings /></a>
+	</div>
 	<div class="flex h-screen flex-col overflow-hidden border-e bg-white">
 		<div class="flex-1 px-4 py-6 pt-2">
 			<div class="flex w-full items-center justify-between py-2">
@@ -120,28 +122,5 @@
 				</a>
 			</div>
 		{/if}
-		<button
-			type="button"
-			class="mt-2 rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-primary-300"
-			onclick={async () => await deleteDb()}
-		>
-			Delete Database
-		</button>
-		<button
-			type="button"
-			class="mt-2 rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
-			onclick={async () => {
-				const databaseFile = await getDb();
-				const fileUrl = URL.createObjectURL(databaseFile);
-				const a = document.createElement('a');
-				a.href = fileUrl;
-				a.download = 'notesvac.sqlite3';
-				a.click();
-				a.remove();
-				URL.revokeObjectURL(fileUrl);
-			}}
-		>
-			Download Database
-		</button>
 	</div>
 </div>

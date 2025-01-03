@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head><title>NotesVac</title></svelte:head>
-{#if db}
+{#if db && db.ready}
 	<div class="flex @container">
 		<div
 			class="@lg:sticky @lg:top-0 @lg:flex @lg:h-screen @lg:w-[320px] @lg:min-w-[320px] @lg:flex-shrink-0 @lg:flex-grow-0 @lg:flex-col @lg:justify-between @lg:overflow-y-auto"
@@ -33,7 +33,7 @@
 				{@render children()}
 
 				{#snippet failed(error, reset)}
-					<button onclick={reset}>oops! try again</button>
+					<button onclick={reset}>Oops! try again</button>
 					{JSON.stringify(error)}
 				{/snippet}
 			</svelte:boundary>
