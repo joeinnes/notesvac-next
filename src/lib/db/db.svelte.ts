@@ -11,6 +11,11 @@ const createDb = () => {
 			return thisDb;
 		},
 		set db(value) {
+			if (!value) {
+				thisDb = undefined;
+				isReady = false;
+				return;
+			}
 			migrateToLatest(value).then(() => {
 				thisDb = value;
 				isReady = true;
@@ -31,7 +36,7 @@ class getAllMigrations {
 	}
 }
 
-async function migrateToLatest(db) {
+async function migrateToLatest(db: Kysely<Database>) {
 	const migrator = new Migrator({
 		db,
 		provider: new getAllMigrations()

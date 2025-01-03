@@ -10,7 +10,10 @@ export interface UserTable {
 	id: string;
 	name: string | null;
 	avatar: string | null;
-	api_key: string | null;
+	username: string | null;
+	openai_api_key: string | null;
+	gcp_api_key: string | null;
+	handwriting_api_choice: 'GCP' | 'ChatGPT' | null;
 	created_at: ColumnType<Date, string | undefined, never>;
 }
 

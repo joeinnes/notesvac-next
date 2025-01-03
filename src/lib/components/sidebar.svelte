@@ -107,10 +107,12 @@
 			</a>
 		</div>
 
-		{#if user}
+		{#if user && (user.name || user.avatar)}
 			<div class="border-t border-gray-100">
 				<a href="/me" class="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
-					<img alt="" src={user.avatar} class="size-10 rounded-full object-cover" />
+					{#if user.avatar}
+						<img alt="" src={user.avatar} class="size-10 rounded-full object-cover" />
+					{/if}
 
 					<div>
 						<p class="text-xs">

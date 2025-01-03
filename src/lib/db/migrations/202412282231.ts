@@ -17,12 +17,14 @@ export async function up(db: Kysely<Database>): Promise<void> {
 
 	await db.schema
 		.createTable('user')
-		.addColumn('id', 'integer', (col) => col.primaryKey().notNull().unique())
-		.addColumn('name', 'text', (col) => col.notNull())
-		.addColumn('username', 'text', (col) => col.notNull().unique())
+		.addColumn('id', 'text', (col) => col.primaryKey().notNull().unique())
+		.addColumn('name', 'text')
+		.addColumn('username', 'text', (col) => col.unique())
 		.addColumn('avatar', 'text')
-		.addColumn('api_key', 'text')
-		.addColumn('password_hash', 'text', (col) => col.notNull())
+		.addColumn('openai_api_key', 'text')
+		.addColumn('gcp_api_key', 'text')
+		.addColumn('handwriting_api_choice', 'text')
+		.addColumn('created_at', 'text', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`))
 		.execute();
 
 	await sql`CREATE VIRTUAL TABLE notes_search using fts5(title, content, keywords, summary, tokenize = 'porter unicode61');`.execute(

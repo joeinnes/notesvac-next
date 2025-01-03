@@ -33,7 +33,29 @@ export const load: LayoutLoad = async ({ url }) => {
 				.execute();
 		}
 
-		const userFromDb = db.selectFrom('user').selectAll().executeTakeFirst();
+		const userFromDb = db
+			.selectFrom('user')
+			.selectAll()
+			.executeTakeFirst()
+			.then(async (res) => {
+				if (!res) {
+					const newUser = await db
+						?.insertInto('user')
+						.values({
+							id: crypto.randomUUID(),
+							openai_api_key: '',
+							gcp_api_key: '',
+							handwriting_api_choice: 'GCP'
+						})
+						.returningAll()
+						.executeTakeFirst();
+
+					return newUser;
+				}
+				return res;
+			})
+			.catch((e) => console.error(e));
+
 		const [user, notes] = await Promise.all([userFromDb, notesFromDb]);
 		return {
 			user,
