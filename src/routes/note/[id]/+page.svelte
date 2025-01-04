@@ -46,6 +46,13 @@
 				.finally(() => {
 					loading = false;
 				});
+		} else if (id === 'new') {
+			note = {
+				id: '',
+				content: demoContent,
+				keywords: '',
+				summary: ''
+			};
 		}
 	});
 

@@ -9,7 +9,7 @@
 	import Settings from 'lucide-svelte/icons/settings';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 	import { db } from '$lib/db/db.svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	const { notes, user } = $derived($page.data);
 
@@ -25,8 +25,12 @@
 
 	const deleteNote = async (id: string) => {
 		const shouldDel = confirm('Are you sure? This cannot be undone!');
+		const currentPage = $page.data?.id;
 		if (!shouldDel) return;
 		await db.db?.deleteFrom('note').where('id', '=', id).execute();
+		if (currentPage === id) {
+			await goto('/');
+		}
 		invalidateAll();
 	};
 </script>
