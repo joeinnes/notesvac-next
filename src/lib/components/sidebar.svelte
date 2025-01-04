@@ -7,6 +7,7 @@
 
 	import Icon from '$lib/icon/Icon.svelte';
 	import Settings from 'lucide-svelte/icons/settings';
+	import Trash_2 from 'lucide-svelte/icons/trash-2';
 
 	const { notes, user } = $derived($page.data);
 
@@ -79,13 +80,13 @@
 								href="/note/{note.id}"
 								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex max-w-full flex-col items-start gap-2 whitespace-nowrap border-b text-sm leading-tight last:border-b-0"
 							>
-								<div class="flex w-full">
-									<span class="truncate"
-										>{#key note.content}{note.content}
-										{/key}</span
-									>
-
+								<span class="w-full truncate"
+									>{#key note.content}{note.content}
+									{/key}</span
+								>
+								<div class="flex w-full gap-1">
 									<span class="ml-auto text-xs">{dayjs(note.createdAt).fromNow()}</span>
+									<Trash_2 class="h-4 w-4 flex-shrink-0" />
 								</div>
 							</a>
 						</li>

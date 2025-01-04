@@ -9,7 +9,9 @@
 	let { data }: { data: PageData } = $props();
 	let { user } = $derived(data);
 	let dialog: HTMLDialogElement | undefined = $state();
-
+	let uploadingHandwriting = $state(false);
+	const demoContent =
+		'# Welcome\n\nEdit this note. You can use **most** basic [Markdown](https://www.markdownguide.org/cheat-sheet/) syntax __if__ you like...';
 	const { id } = $derived(data);
 	let note: {
 		id: string;
@@ -18,8 +20,7 @@
 		summary: string | null;
 	} = $state({
 		id: '',
-		content:
-			'# Welcome\n\nEdit this note. You can use **most** basic [Markdown](https://www.markdownguide.org/cheat-sheet/) syntax __if__ you like...',
+		content: demoContent,
 		keywords: '',
 		summary: ''
 	});
@@ -159,6 +160,9 @@
 </form>
 
 <dialog bind:this={dialog} class="mx-auto rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
+	{#if uploadingHandwriting}
+		<div class="absolute z-10 h-full w-full animate-pulse bg-gray-500/50"></div>
+	{/if}
 	<div class="relative p-6">
 		<h3 class="text-lg font-medium text-secondary-900">
 			Upload a photo for handwriting recognition
@@ -193,7 +197,9 @@
 					.then(async (res) => {
 						await saveNote();
 						const content = editor?.getContent();
-						editor?.setContent((content ? content + '\n\n' : '') + res?.text || '');
+						editor?.setContent(
+							(content && content !== demoContent ? content + '\n\n' : '') + res?.text || ''
+						); // Overwrite demo content automatically.
 						note.keywords = res?.keywords || '';
 						note.summary = res?.summary || '';
 						await saveNote();
@@ -202,12 +208,16 @@
 					.catch((e) => {
 						console.error(e);
 						dialog?.close();
+					})
+					.finally(() => {
+						uploadingHandwriting = false;
 					});
 			}}
 		>
 			<button
 				class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
-				>OK</button
+				disabled={uploadingHandwriting}
+				>{#if uploadingHandwriting}Uploading...{:else}OK{/if}</button
 			>
 		</form>
 	</div>
