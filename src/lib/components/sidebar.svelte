@@ -8,6 +8,8 @@
 	import Icon from '$lib/icon/Icon.svelte';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
+	import { db } from '$lib/db/db.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	const { notes, user } = $derived($page.data);
 
@@ -20,6 +22,13 @@
 			maxWait: 2000 // If the user keeps typing for more than 2 seconds, don't debounce continuously, just return after 2 seconds
 		}
 	);
+
+	const deleteNote = async (id: string) => {
+		const shouldDel = confirm('Are you sure? This cannot be undone!');
+		if (!shouldDel) return;
+		await db.db?.deleteFrom('note').where('id', '=', id).execute();
+		invalidateAll();
+	};
 </script>
 
 <div class="flex">
@@ -78,16 +87,21 @@
 						<li class="w-full py-4">
 							<a
 								href="/note/{note.id}"
-								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex max-w-full flex-col items-start gap-2 whitespace-nowrap border-b text-sm leading-tight last:border-b-0"
+								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap border-b text-sm leading-tight last:border-b-0"
 							>
-								<span class="w-full truncate"
-									>{#key note.content}{note.content}
-									{/key}</span
-								>
-								<div class="flex w-full gap-1">
-									<span class="ml-auto text-xs">{dayjs(note.createdAt).fromNow()}</span>
-									<Trash_2 class="h-4 w-4 flex-shrink-0" />
+								<div class="flex w-full justify-between">
+									<span class="block w-full truncate"
+										>{#key note.content}{note.content}
+										{/key}</span
+									>
+									<button
+										onclick={() => deleteNote(note.id)}
+										class="translate-x-full transform rounded-full bg-red-500 p-1 text-white transition-transform group-hover:translate-x-0"
+										><Trash_2 class="h-4 w-4 flex-shrink-0" /></button
+									>
 								</div>
+
+								<span class="text-xs text-gray-700">{dayjs(note.createdAt).fromNow()}</span>
 							</a>
 						</li>
 					{:else}

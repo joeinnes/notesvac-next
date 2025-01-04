@@ -155,8 +155,52 @@
 			</button>
 		</div>
 	</div>
-	<input type="hidden" bind:value={note.keywords} />
-	<input type="hidden" bind:value={note.summary} />
+	<details class="group">
+		<summary
+			class="flex cursor-pointer list-none items-center justify-between py-4 text-lg font-medium text-secondary-900"
+		>
+			Metadata
+			<div class="text-secondary-500">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="block h-5 w-5 transition-all duration-300 group-open:rotate-180"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+				</svg>
+			</div>
+		</summary>
+		<div class="pb-4 text-secondary-500">
+			<div class="mb-2">
+				<label for="keywords" class="block text-xs font-medium text-gray-700"> Keywords </label>
+
+				<input
+					type="text"
+					id="keywords"
+					placeholder="keywords"
+					class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+					name="keywords"
+					bind:value={note.keywords}
+					onchange={() => debouncedSave()}
+				/>
+			</div>
+			<div class="mb-2">
+				<label for="summary" class="block text-xs font-medium text-gray-700"> Summary </label>
+
+				<textarea
+					id="summary"
+					placeholder="summary"
+					class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+					name="summary"
+					bind:value={note.summary}
+					onchange={() => debouncedSave()}
+				></textarea>
+			</div>
+		</div>
+	</details>
 </form>
 
 <dialog bind:this={dialog} class="mx-auto rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
