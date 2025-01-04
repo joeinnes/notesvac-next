@@ -34,10 +34,9 @@
 				.executeTakeFirst()
 
 				.then((res) => {
-					if (res && res.content) {
-						console.log('loaded');
+					if (res) {
 						note = res;
-						editor?.setContent(res.content);
+						editor?.setContent(res.content || '');
 						editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 					} else {
 						goto('/note/new');

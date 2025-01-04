@@ -81,6 +81,7 @@
 			placeholder="Username"
 			class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 			name="username"
+			value={$page.data.user.username}
 			onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
 				const username = e.currentTarget.value;
 				db.db
@@ -145,6 +146,7 @@
 			placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 			class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 			name="OpenAIAPIKey"
+			value={$page.data.user.openai_api_key}
 			onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
 				const openai_api_key = e.currentTarget.value;
 				db.db
@@ -170,6 +172,7 @@
 			type="text"
 			id="GCPAPIKey"
 			placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+			value={$page.data.user.gcp_api_key}
 			class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 			name="GCPAPIKey"
 			onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
@@ -277,7 +280,7 @@
 								}
 							});
 					}}
-					disabled
+					disabled={!user.openai_api_key}
 				/>
 			</label>
 		</div>

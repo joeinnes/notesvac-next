@@ -1,7 +1,7 @@
-import OpenAI from "openai";
+import OpenAI from 'openai';
 
 export const getText = async (vendor: string, apiKey: string, image: string) => {
-  if (vendor === 'GCP') {
+	if (vendor === 'GCP') {
 		const res = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`, {
 			method: 'POST',
 			body: JSON.stringify({
@@ -30,47 +30,74 @@ export const getText = async (vendor: string, apiKey: string, image: string) => 
 			summary: ''
 		};
 	} else if (vendor === 'ChatGPT') {
-    const openai = new OpenAI({
-    apiKey
-  });
-		const text = `Please use your vision abilities to analyze the attached image of a handwritten notebook and transcribe the content into Markdown format. You MUST maintain the structure and organization of the original notes while adhering to the following transcription rules for specific bullet points:
+		const openai = new OpenAI({
+			apiKey,
+			dangerouslyAllowBrowser: true
+		}); // Note, this isn't actually dangerous because the user themselves is bringing the API key.
+		const text = `You are an advanced AI capable of OCR (Optical Character Recognition) and text analysis. Your task is to analyze an image of handwritten text provided via a URL and generate a response in the form of a JSON object. Follow these instructions carefully:
+
+Transcribe: Extract the full handwritten text from the image.
+Summarize: Provide a concise summary of the main points in the text.
+Extract Keywords: Identify important keywords from the text and return them as a comma-separated list.
+
+Formatting Requirements:
+
+    Output only a JSON object, with no additional text, formatting, or code fences.
+    The JSON structure must be as follows:
+
+{
+  "text": "Full transcription of the handwritten text.",
+  "summary": "Concise summary of the main points.",
+  "keywords": "keyword1, keyword2, keyword3"
+}
+
+Key Rules:
+
+    Do not include markdown or code fences around the JSON.
+    Return only the JSON object.
+
+Additional Guidance: 
+Normal text and headings:
+- Headings in the notebook should use # for Markdown headings. 
+- If a new top level heading appears part-way through the image, use a dividing line above the heading to separate the sections (---).
+- Standard bullet points should use - or *.
+- Numbered lists should use 1. or similar.
     
-        Normal text and headings:
-            Headings in the notebook should use # for Markdown headings.
-            Standard bullet points should use - or *.
-            Numbered lists should use 1. or similar.
-    
-        Special bullet points:
-            A circle (◯) indicates an event. Transcribe as a normal bullet point (-).
-            A box (☐) represents a to-do item:
-                Empty box: incomplete task → - [ ].
-                Box with a diagonal line: partially completed task → - [/].
-                Box with a cross: completed task → - [x].
-                Arrow symbol (→): task moved → - [>].
-            A circle with a smaller circle or dot (⊙ or •) represents a musical album listened to. Transcribe using ♪ as the bullet point.
-    
-    You MUST ensure the output is clean, accurate, and formatted in Markdown. You SHOULD use appropriate context clues to figure out any potential transcription errors you may have made, and correct them appropriately.
-    
-    You MUST also provide a list of search keywords and a brief summary of the most salient points. Format your answer as a JSON object with the properties 'text', 'summary' and 'keywords'.`
-      try {
-        const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text },
-              {
-                type: "image_url",
-                image_url: {
-                  image
-                },
-              },
-            ],
-          },
-        ],
-      });
-      console.log(response)
-      return response;
+Special bullet points:
+- A circle (◯) indicates an event. Transcribe as a normal bullet point (-).
+- A box (☐) represents a to-do item:
+- Empty box: incomplete task → - [ ].
+- Box with a diagonal line: partially completed task → - [/].
+- Box with a cross: completed task → - [x].
+- Arrow symbol (→): task moved → - [>].
+- A circle with a smaller circle or dot (⊙ or •) represents a musical album listened to. Transcribe using ♪ as the bullet point.
+
+Follow these instructions exactly. Failure to do so will result in an invalid response."`;
+		try {
+			const response = await openai.chat.completions.create({
+				model: 'gpt-4o',
+				messages: [
+					{
+						role: 'user',
+						content: [
+							{ type: 'text', text },
+							{
+								type: 'image_url',
+								image_url: {
+									url: 'data:image/jpeg;base64,' + image
+								}
+							}
+						]
+					}
+				]
+			});
+			console.log(response);
+			if (!response.choices[0].message.content)
+				throw new Error('The response from the API was poorly structured.');
+			return JSON.parse(response.choices[0].message.content);
+		} catch (e) {
+			console.error(e);
+			throw new Error('Failed to fetch data. Please check your API key and try again.');
+		}
 	}
 };
