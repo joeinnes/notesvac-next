@@ -4,7 +4,7 @@
 	import { Editor, type CursorPosition } from 'tiny-markdown-editor';
 	import type { PageData } from './$types';
 	import { db } from '$lib/db/db.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, beforeNavigate, afterNavigate } from '$app/navigation';
 	import { getText } from '$lib/utils/get-text';
 	let { data }: { data: PageData } = $props();
 	let { user } = $derived(data);
@@ -27,6 +27,7 @@
 		is_deleted: false
 	});
 	let loading = $state(true);
+	let focusInEditor = $state(false);
 
 	$effect(() => {
 		if (db?.db && id && id !== 'new' && editor) {
@@ -40,7 +41,7 @@
 					if (res) {
 						note = res;
 						editor?.setContent(res.content || '');
-						editor?.setSelection(anchor || { row: 0, col: 0 }, null);
+						if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 					} else {
 						goto('/note/new');
 					}
@@ -81,7 +82,7 @@
 			invalidateAll: true
 		});
 		note.id = noteToInsert.id;
-		editor?.setSelection(anchor || { row: 0, col: 0 }, null);
+		if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 		return;
 	};
 
@@ -96,8 +97,12 @@
 			note.content = e.content;
 			debouncedSave();
 		});
+
 		return {
 			destroy: () => {
+				if (note.content !== demoContent) {
+					saveNote();
+				}
 				editor = undefined;
 			}
 		};
@@ -124,6 +129,20 @@
 				resizedFile = resized;
 			})
 			.catch((e) => console.error(e));
+	});
+	$effect(() => {
+		const onFocus = () => {
+			focusInEditor = true;
+		};
+		const onBlur = () => {
+			focusInEditor = false;
+		};
+		document.querySelector('.TinyMDE')?.addEventListener('focus', onFocus);
+		document.querySelector('.TinyMDE')?.addEventListener('blur', onBlur);
+		return () => {
+			document.querySelector('.TinyMDE')?.removeEventListener('focus', onFocus);
+			document.querySelector('.TinyMDE')?.removeEventListener('blur', onBlur);
+		};
 	});
 </script>
 
@@ -237,35 +256,35 @@
 		<form
 			method="dialog"
 			class="text-end"
-			onsubmit={(e) => {
+			onsubmit={async (e) => {
+				await saveNote(); // In case note does not yet exist, create it
 				e.preventDefault();
+				uploadingHandwriting = true;
 				if (!user) return;
 				const apiKey =
 					user.handwriting_api_choice === 'GCP' ? user.gcp_api_key : user.openai_api_key;
 				if (!apiKey) return;
-				getText(
-					user.handwriting_api_choice || 'GCP',
-					apiKey,
-					imagePreview.split('data:image/jpeg;base64,')[1]
-				)
-					.then(async (res) => {
-						await saveNote();
-						const content = editor?.getContent();
-						editor?.setContent(
-							(content && content !== demoContent ? content + '\n\n' : '') + res?.text || ''
-						); // Overwrite demo content automatically.
-						note.keywords = res?.keywords || '';
-						note.summary = res?.summary || '';
-						await saveNote();
-						dialog?.close();
-					})
-					.catch((e) => {
-						console.error(e);
-						dialog?.close();
-					})
-					.finally(() => {
-						uploadingHandwriting = false;
-					});
+				try {
+					const res = await getText(
+						user.handwriting_api_choice || 'GCP',
+						apiKey,
+						imagePreview.split('data:image/jpeg;base64,')[1]
+					);
+
+					const content = editor?.getContent();
+					editor?.setContent(
+						(content && content !== demoContent ? content + '\n\n' : '') + res?.text || ''
+					); // Overwrite demo content automatically.
+					note.keywords = res?.keywords || '';
+					note.summary = res?.summary || '';
+					await saveNote();
+					dialog?.close();
+				} catch (e) {
+					console.error(e);
+					dialog?.close();
+				} finally {
+					uploadingHandwriting = false;
+				}
 			}}
 		>
 			<button

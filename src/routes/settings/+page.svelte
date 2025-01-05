@@ -219,7 +219,7 @@
 					value="GCP"
 					id="GCP"
 					class="size-5 border-gray-300 text-primary-500"
-					checked
+					checked={user.handwriting_api_choice === 'GCP'}
 					onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
 						const handwriting_api_choice = e.currentTarget.value;
 						if (handwriting_api_choice !== 'GCP' && handwriting_api_choice !== 'ChatGPT') return;
@@ -280,6 +280,7 @@
 								}
 							});
 					}}
+					checked={user.handwriting_api_choice === 'ChatGPT'}
 					disabled={!user.openai_api_key}
 				/>
 			</label>

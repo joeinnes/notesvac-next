@@ -1,4 +1,20 @@
 import OpenAI from 'openai';
+import { zodResponseFormat } from 'openai/helpers/zod';
+import { z } from 'zod';
+
+const TranscribedNote = z.object({
+	text: z
+		.string()
+		.describe(
+			'The full handwritten text, extracted from the image and formatted as markdown in accordance with provided guidelines.'
+		),
+	summary: z.string().describe('A concise summary of the main points in the text.'),
+	keywords: z
+		.string()
+		.describe(
+			'Important keywords from the text as a comma-separated list to better enable search discovery.'
+		)
+});
 
 export const getText = async (vendor: string, apiKey: string, image: string) => {
 	if (vendor === 'GCP') {
@@ -40,22 +56,6 @@ Transcribe: Extract the full handwritten text from the image.
 Summarize: Provide a concise summary of the main points in the text.
 Extract Keywords: Identify important keywords from the text and return them as a comma-separated list.
 
-Formatting Requirements:
-
-    Output only a JSON object, with no additional text, formatting, or code fences.
-    The JSON structure must be as follows:
-
-{
-  "text": "Full transcription of the handwritten text.",
-  "summary": "Concise summary of the main points.",
-  "keywords": "keyword1, keyword2, keyword3"
-}
-
-Key Rules:
-
-    Do not include markdown or code fences around the JSON.
-    Return only the JSON object.
-
 Additional Guidance: 
 Normal text and headings:
 - Headings in the notebook should use # for Markdown headings. 
@@ -74,13 +74,14 @@ Special bullet points:
 
 Follow these instructions exactly. Failure to do so will result in an invalid response."`;
 		try {
-			const response = await openai.chat.completions.create({
+			const response = await openai.beta.chat.completions.parse({
 				model: 'gpt-4o',
 				messages: [
+					{ role: 'system', content: text },
 					{
 						role: 'user',
 						content: [
-							{ type: 'text', text },
+							{ type: 'text', text: 'Extract data from the image' },
 							{
 								type: 'image_url',
 								image_url: {
@@ -89,12 +90,13 @@ Follow these instructions exactly. Failure to do so will result in an invalid re
 							}
 						]
 					}
-				]
+				],
+				response_format: zodResponseFormat(TranscribedNote, 'transcribed_note')
 			});
 			console.log(response);
-			if (!response.choices[0].message.content)
+			if (!response.choices[0].message?.parsed)
 				throw new Error('The response from the API was poorly structured.');
-			return JSON.parse(response.choices[0].message.content);
+			return response.choices[0].message.parsed;
 		} catch (e) {
 			console.error(e);
 			throw new Error('Failed to fetch data. Please check your API key and try again.');

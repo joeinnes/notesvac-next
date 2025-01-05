@@ -15,6 +15,7 @@
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 	import { db } from '$lib/db/db.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
+	let query = $state('');
 
 	const { notes, user } = $derived($page.data);
 
@@ -68,6 +69,7 @@
 						id="Search"
 						placeholder="Search for..."
 						name="q"
+						bind:value={query}
 						onkeyup={debouncedSearch}
 						data-sveltekit-replacestate
 						data-sveltekit-keepfocus
@@ -106,7 +108,7 @@
 							class="group flex w-full max-w-full items-center overflow-hidden border-b border-t-0 py-4 last:border-b-0"
 						>
 							<a
-								href="/note/{note.id}"
+								href="/note/{note.id}{query && '?q=' + query}"
 								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap text-sm leading-tight"
 							>
 								<div class="flex w-full justify-between">
