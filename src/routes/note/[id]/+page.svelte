@@ -18,11 +18,13 @@
 		content: string | null;
 		keywords: string | null;
 		summary: string | null;
+		is_deleted: boolean;
 	} = $state({
 		id: '',
 		content: demoContent,
 		keywords: '',
-		summary: ''
+		summary: '',
+		is_deleted: false
 	});
 	let loading = $state(true);
 
@@ -51,7 +53,8 @@
 				id: '',
 				content: demoContent,
 				keywords: '',
-				summary: ''
+				summary: '',
+				is_deleted: false
 			};
 		}
 	});

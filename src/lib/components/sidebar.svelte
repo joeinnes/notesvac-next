@@ -1,8 +1,13 @@
 <script lang="ts">
 	import debounce from 'lodash.debounce';
+	import { page } from '$app/stores';
+
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
-	import { page } from '$app/stores';
+	import utc from 'dayjs/plugin/utc';
+
+	dayjs.extend(utc);
+
 	dayjs.extend(relativeTime);
 
 	import Icon from '$lib/icon/Icon.svelte';
@@ -27,7 +32,13 @@
 		const shouldDel = confirm('Are you sure? This cannot be undone!');
 		const currentPage = $page.data?.id;
 		if (!shouldDel) return;
-		await db.db?.deleteFrom('note').where('id', '=', id).execute();
+		await db.db
+			?.updateTable('note')
+			.set({
+				is_deleted: true
+			})
+			.where('id', '=', id)
+			.execute();
 		if (currentPage === id) {
 			await goto('/');
 		}
@@ -35,10 +46,13 @@
 	};
 </script>
 
-<div class="flex">
-	<div class="flex h-full min-w-[50px] flex-col items-center justify-between border-e p-2">
+<div class="flex overflow-hidden">
+	<div class="flex h-full min-w-[50px] flex-col items-center gap-4 border-e p-1">
 		<a href="/" class="w-full"><Icon /></a>
-		<a href="/settings"><Settings /></a>
+		<a href="/deleted" class="rounded p-1 transition-colors hover:bg-secondary-200"><Trash_2 /></a>
+		<a href="/settings" class="mt-auto rounded p-1 transition-colors hover:bg-secondary-200"
+			><Settings /></a
+		>
 	</div>
 	<div class="flex h-screen flex-col overflow-hidden border-e bg-white">
 		<div class="flex-1 px-4 py-6 pt-2">
@@ -88,25 +102,27 @@
 					<li><p>Loading</p></li>
 				{:then notes}
 					{#each notes as note (note.id)}
-						<li class="w-full py-4">
+						<li
+							class="group flex w-full max-w-full items-center overflow-hidden border-b border-t-0 py-4 last:border-b-0"
+						>
 							<a
 								href="/note/{note.id}"
-								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group flex max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap border-b text-sm leading-tight last:border-b-0"
+								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap text-sm leading-tight"
 							>
 								<div class="flex w-full justify-between">
 									<span class="block w-full truncate"
 										>{#key note.content}{note.content}
 										{/key}</span
 									>
-									<button
-										onclick={() => deleteNote(note.id)}
-										class="translate-x-full transform rounded-full bg-red-500 p-1 text-white transition-transform group-hover:translate-x-0"
-										><Trash_2 class="h-4 w-4 flex-shrink-0" /></button
-									>
 								</div>
 
-								<span class="text-xs text-gray-700">{dayjs(note.createdAt).fromNow()}</span>
+								<span class="text-xs text-gray-700">{dayjs.utc(note.created_at).fromNow()}</span>
 							</a>
+							<button
+								onclick={() => deleteNote(note.id)}
+								class="absolute right-0 translate-x-full transform rounded-full bg-red-500 p-1 text-white transition-transform group-hover:translate-x-0"
+								><Trash_2 class="h-4 w-4 flex-shrink-0" /></button
+							>
 						</li>
 					{:else}
 						<li>

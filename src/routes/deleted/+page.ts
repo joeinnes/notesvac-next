@@ -1,10 +1,10 @@
 import { browser } from '$app/environment';
-import type { LayoutLoad } from './$types';
+import type { PageLoad } from './$types';
 import { sql } from 'kysely';
 
 export const ssr = false;
 
-export const load: LayoutLoad = async ({ url }) => {
+export const load: PageLoad = async ({ url }) => {
 	if (!browser) return;
 	try {
 		const { db } = await import('$lib/db');
@@ -20,7 +20,7 @@ export const load: LayoutLoad = async ({ url }) => {
 				.innerJoin('note', 'note.rowid', 'notes_search.rowid')
 				// @ts-expect-error The notes search table is a virtual table and not typed properly by Kysely.
 				.where('notes_search', sql`match`, q)
-				.where('is_deleted', '=', false)
+				.where('is_deleted', '=', true)
 				.orderBy('rank')
 				.execute();
 
@@ -29,44 +29,18 @@ export const load: LayoutLoad = async ({ url }) => {
 			notesFromDb = db
 				.selectFrom('note')
 				.selectAll()
-				.where('is_deleted', '=', false)
+				.where('is_deleted', '=', true)
 				.orderBy('created_at', 'desc')
 				.limit(20)
 				.offset(offset || 0)
 				.execute();
 		}
 
-		/** Note: I'd rather do this on database up, should investigate using `onInit` to do this */
-		const userFromDb = db
-			.selectFrom('user')
-			.selectAll()
-			.executeTakeFirst()
-			.then(async (res) => {
-				if (!res) {
-					const newUser = await db
-						?.insertInto('user')
-						.values({
-							id: crypto.randomUUID(),
-							openai_api_key: '',
-							gcp_api_key: '',
-							handwriting_api_choice: 'GCP'
-						})
-						.returningAll()
-						.executeTakeFirst();
-
-					return newUser;
-				}
-				return res;
-			})
-			.catch((e) => console.error(e));
-
-		const [user, notes] = await Promise.all([userFromDb, notesFromDb]);
+		const deletedNotes = await notesFromDb;
 		return {
-			user,
-			notes
+			deletedNotes
 		};
 	} catch (e) {
-		console.error(e);
-		console.log(`Looks like you're new here.`);
+		console.error(`Something odd happened`, e);
 	}
 };

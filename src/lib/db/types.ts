@@ -29,16 +29,15 @@ export interface NoteTable {
 	last_updated: ColumnType<Date, string | undefined, never>;
 	summary: string | null;
 	keywords: string | null;
+	is_deleted: boolean;
 }
 
 export type Note = Selectable<NoteTable>;
 export type NewNote = Insertable<NoteTable>;
 export type NoteUpdate = Updateable<NoteTable>;
 
-export interface NoteSearchTable {
-	title: string | null;
-	content: string | null;
-	summary: string | null;
-	keywords: string | null;
+export interface NoteSearchTable extends NoteTable {
+	rank: number;
+  rowid: number;
 }
 export type NoteSearch = Selectable<NoteSearchTable>;
