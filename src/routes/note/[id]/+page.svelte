@@ -76,11 +76,12 @@
 			.execute();
 		anchor = editor?.getSelection(false);
 
-		await goto(`/note/${noteToInsert.id}`, {
-			replaceState: true,
-			keepFocus: true,
-			invalidateAll: true
-		});
+		if (id === 'new')
+			await goto(`/note/${noteToInsert.id}`, {
+				replaceState: true,
+				keepFocus: true,
+				invalidateAll: true
+			});
 		note.id = noteToInsert.id;
 		if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 		return;
