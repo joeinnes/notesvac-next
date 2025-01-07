@@ -8,6 +8,7 @@
 	import utc from 'dayjs/plugin/utc';
 	import { invalidateAll } from '$app/navigation';
 	import { db } from '$lib/db/db.svelte';
+	import Trash_2 from 'lucide-svelte/icons/trash-2';
 
 	dayjs.extend(utc);
 	dayjs.extend(relativeTime);
@@ -22,35 +23,103 @@
 
 		invalidateAll();
 	};
+	let noteToDelete = $state('');
+	let showDeleteModal = $derived(noteToDelete !== '');
+
+	const permaDelete = async (id: string) => {
+		await db.db?.deleteFrom('note').where('id', '=', id).execute();
+		invalidateAll();
+	};
 </script>
 
-{#if deletedNotes}
-	<div class="prose mb-4">
-		{#if deletedNotes.length}<h1>Deleted Notes</h1>{:else}<h1>No Deleted Notes</h1>{/if}
-	</div>
-	<div class="space-y-2">
-		{#each deletedNotes as note}
-			<div class="mx-auto w-full rounded-lg bg-white shadow">
-				<div class="flex w-full items-center justify-center p-4">
-					<div class="w-full">
-						<p class="mt-1 line-clamp-3 w-full flex-1 text-gray-500">
-							{note.content}
-						</p>
-						<span class="text-xs text-gray-700">{dayjs.utc(note.created_at).fromNow()}</span>
+<div class="p-4">
+	{#if deletedNotes}
+		<div class="prose mb-4">
+			{#if deletedNotes.length}<h1>Deleted Notes</h1>{:else}<h1>No Deleted Notes</h1>{/if}
+		</div>
+		<div class="space-y-2">
+			{#each deletedNotes as note}
+				<div class="mx-auto w-full rounded-lg bg-white shadow">
+					<div class="flex w-full items-center justify-center gap-2 p-4">
+						<div class="w-full">
+							<p class="mt-1 line-clamp-3 w-full flex-1 text-gray-500">
+								{note.content}
+							</p>
+							<span class="text-xs text-gray-700">{dayjs.utc(note.created_at).fromNow()}</span>
+						</div>
+						<button
+							class="flex items-center gap-1 rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
+							onclick={() => undeleteNote(note.id)}
+							><Undo2 class="w-4" /> Restore
+						</button>
+						<button
+							class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+							onclick={() => (noteToDelete = note.id)}
+							><Trash_2 class="w-4" />Delete Permanently
+						</button>
 					</div>
-					<button
-						class="flex items-center gap-1 rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
-						onclick={() => undeleteNote(note.id)}>Restore <Undo2 class="w-4" /></button
-					>
+				</div>
+			{:else}
+				<div class="prose">
+					<p>You haven't got any notes in your deleted notes folder.</p>
+					<a href="/">Go home &rarr;</a>
+				</div>
+			{/each}
+		</div>
+	{:else}
+		No deleted notes
+	{/if}
+</div>
+{#if showDeleteModal}
+	<div class="absolute">
+		<div class="h-full">
+			<div class="fixed inset-0 z-10 bg-secondary-700/50"></div>
+			<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+				<div class="mx-auto overflow-hidden rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
+					<div class="relative p-6">
+						<button
+							type="button"
+							aria-label="Close"
+							onclick={() => (noteToDelete = '')}
+							class="absolute right-4 top-4 rounded-lg p-1 text-center font-medium text-secondary-500 transition-all hover:bg-secondary-100"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+								class="h-6 w-6"
+							>
+								<path
+									d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
+								/>
+							</svg>
+						</button>
+						<h3 class="text-lg font-medium text-secondary-900">Delete Note</h3>
+						<div class="mt-2 text-sm text-secondary-500">
+							Are you sure you want to delete this note? There is no way to undo this, your note
+							will be lost forever!
+						</div>
+					</div>
+					<div class="flex justify-end gap-3 bg-secondary-50 px-6 py-3">
+						<button
+							type="button"
+							onclick={() => {
+								noteToDelete = '';
+							}}
+							class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+							>Cancel</button
+						>
+						<button
+							type="button"
+							class="rounded-lg border border-red-500 bg-red-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+							onclick={() => {
+								if (noteToDelete) permaDelete(noteToDelete);
+								noteToDelete = '';
+							}}>Delete Permanently</button
+						>
+					</div>
 				</div>
 			</div>
-		{:else}
-			<div class="prose">
-				<p>You haven't got any notes in your deleted notes folder.</p>
-				<a href="/">Go home &rarr;</a>
-			</div>
-		{/each}
+		</div>
 	</div>
-{:else}
-	No deleted notes
 {/if}

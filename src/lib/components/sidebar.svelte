@@ -121,11 +121,15 @@
 										: createdAt.fromNow()}</span
 								>
 							</a>
-							<button
-								onclick={() => (noteToDelete = note.id)}
-								class="absolute right-0 translate-x-full transform rounded-full bg-red-500 p-1 text-white transition-transform group-hover:translate-x-0"
-								><Trash_2 class="h-4 w-4 flex-shrink-0" /></button
+							<div
+								class="absolute right-0 translate-x-full transform p-2 transition-transform group-hover:translate-x-0"
 							>
+								<button
+									onclick={() => (noteToDelete = note.id)}
+									class="rounded-full bg-red-500 p-1 text-white"
+									><Trash_2 class="h-4 w-4 flex-shrink-0" /></button
+								>
+							</div>
 						</li>
 					{:else}
 						<li>

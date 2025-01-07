@@ -1,5 +1,9 @@
-<div class="prose">
+<div class="prose prose-2xl p-4">
 	<h1>Welcome to NotesVac!</h1>
+	<p class="w-full">
+		NotesVac is a <strong>local</strong> note-taking app with a few cloud-based features, such as AI-enabled
+		OCR. Your notes are private to you.
+	</p>
 	<a
 		href="/note/new"
 		type="button"
