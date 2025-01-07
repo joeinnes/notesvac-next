@@ -81,7 +81,6 @@
 						bind:value={query}
 						onkeyup={debouncedSearch}
 						data-sveltekit-replacestate
-						data-sveltekit-keepfocus
 						class="w-full rounded-md border-gray-200 py-2.5 pe-10 shadow-sm sm:text-sm"
 					/>
 

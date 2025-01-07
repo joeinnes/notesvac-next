@@ -78,7 +78,7 @@
 						{#snippet child({ props })}
 							<a href="##" {...props}>
 								<div
-									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+									class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
 								>
 									<Icon />
 								</div>
@@ -139,7 +139,7 @@
 	>
 		<Sidebar.Header class="gap-3.5 border-b p-4">
 			<div class="flex w-full items-center justify-between">
-				<div class="text-base font-medium text-foreground">NotesVac</div>
+				<div class="text-foreground text-base font-medium">NotesVac</div>
 			</div>
 			<form method="GET" action="" data-sveltekit-keepfocus>
 				<Sidebar.Input
@@ -160,7 +160,7 @@
 						{#each notes as note (note.id)}
 							<a
 								href="/note/{note.id}"
-								class="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0"
 							>
 								<div class="flex w-full items-center gap-2">
 									{#key note.content}

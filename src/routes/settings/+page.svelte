@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
-	import { deleteDb, getDb } from '$lib/db';
+	import { deleteDb, getDb, overwriteDb } from '$lib/db';
 	import { db } from '$lib/db/db.svelte';
 	import { page } from '$app/stores';
+	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
+	import transformToMarkdownString from '$lib/utils/markdownify';
+	import JSZip from 'jszip';
+	import { saveAs } from 'file-saver';
 	let { user } = $derived($page.data);
+	let restoreDb: FileList | null | undefined = $state();
 	let avatar: File | null = $state(null);
 	let avatarPreview: string | null = $state('');
+
 	$effect(() => {
 		if (user.avatar) {
 			avatarPreview = user?.avatar;
@@ -290,7 +296,7 @@
 
 		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">Get My Data</h2>
 
-		<div>
+		<div class="flex gap-2">
 			<button
 				type="button"
 				class="mt-2 rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
@@ -307,26 +313,99 @@
 			>
 				Download Database
 			</button>
+
+			<button
+				type="button"
+				class="mt-2 rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
+				onclick={async () => {
+					const notes = await db.db?.selectFrom('note').selectAll().execute();
+					if (!notes) {
+						Toasts.addToast('error', 'No notes to download!');
+						return;
+					}
+					const zip = new JSZip();
+					notes.forEach((note) => {
+						let { content, ...frontmatter } = note;
+						const thisNote = transformToMarkdownString({
+							frontmatter: Object.keys(frontmatter).map((el) => ({ [el]: frontmatter[el] })),
+							body: content || ''
+						});
+						zip.file(note.created_at + ' ' + note.id + '.md', thisNote);
+					});
+					zip.generateAsync({ type: 'blob' }).then(
+						function (blob) {
+							saveAs(blob, 'My Notes.zip');
+						},
+						function (err) {
+							console.error(err);
+						}
+					);
+				}}
+			>
+				Download Notes as Markdown Files
+			</button>
 		</div>
 
 		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">Here Be Dragons 🐉</h2>
 
-		<div>
-			<button
-				type="button"
-				class="mt-2 rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
-				onclick={async () => {
-					const res = confirm(
-						'Are you sure? There is no going back. Your database will be lost forever.'
-					);
-					if (res) {
-						await deleteDb();
-						goto('/');
-					}
-				}}
-			>
-				Delete Database
-			</button>
+		<div class="grid grid-cols-2 gap-4">
+			<div>
+				<h3 class="text-xl font-semibold">Restore database from a backup</h3>
+				<p>This will delete any existing notes in your current database.</p>
+				<label for="restore_db" class="mb-1 block text-sm font-medium text-gray-700"
+					>Upload file</label
+				>
+				<input
+					type="file"
+					id="restore_db"
+					name="restore_db"
+					bind:files={restoreDb}
+					class="block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-primary-500 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-primary-700 focus:outline-none disabled:pointer-events-none disabled:opacity-60"
+				/>
+				<button
+					type="button"
+					class="mt-2 rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+					onclick={async () => {
+						const res = confirm(
+							'Are you sure? There is no going back. If your current database has content, it will be overwritten and lost forever.'
+						);
+						if (res && restoreDb) {
+							await overwriteDb(restoreDb[0]);
+							Toasts.addToast('success', 'Your database was successfully restored.');
+							await goto('/', {
+								invalidateAll: true
+							});
+						} else {
+							Toasts.addToast('warning', 'Your database was not overwritten.');
+						}
+					}}
+					disabled={!restoreDb}
+				>
+					Restore Database
+				</button>
+			</div>
+
+			<div>
+				<h3 class="text-xl font-semibold">Delete database</h3>
+				<p>This will delete all notes in your database.</p>
+				<button
+					type="button"
+					class="mt-2 rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+					onclick={async () => {
+						const res = confirm(
+							'Are you sure? There is no going back. Your database will be lost forever.'
+						);
+						if (res) {
+							await deleteDb();
+							await goto('/', {
+								invalidateAll: true
+							});
+						}
+					}}
+				>
+					Delete Database
+				</button>
+			</div>
 		</div>
 	{/if}
 </div>

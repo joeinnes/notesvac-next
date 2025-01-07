@@ -38,6 +38,6 @@ export type NoteUpdate = Updateable<NoteTable>;
 
 export interface NoteSearchTable extends NoteTable {
 	rank: number;
-  rowid: number;
+	rowid: number;
 }
 export type NoteSearch = Selectable<NoteSearchTable>;

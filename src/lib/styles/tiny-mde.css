@@ -2,15 +2,13 @@
 	@apply h-full;
 }
 
-
 .TMBlankLine {
 	@apply h-6;
 }
 
 .TMH1,
 .TMSetextH1 {
-  @apply text-2xl font-bold leading-6 mb-2;
-	
+	@apply mb-2 text-2xl font-bold leading-6;
 }
 
 .TMSetextH1 {
@@ -23,11 +21,11 @@
 
 .TMH2,
 .TMSetextH2 {
-	@apply text-xl font-bold mb-1;
+	@apply mb-1 text-xl font-bold;
 }
 
 .TMMark_TMCode {
-  @apply text-sm;
+	@apply text-sm;
 	font-family: monospace;
 }
 
@@ -36,21 +34,19 @@
 .TMIndentedCode,
 .TMCode {
 	font-family: monospace;
-	@apply text-sm bg-gray-50;
+	@apply bg-gray-50 text-sm;
 }
 
 .TMCodeFenceBacktickOpen,
 .TMCodeFenceTildeOpen {
-  @apply text-sm border-b border-gray-200;
+	@apply border-b border-gray-200 text-sm;
 	font-family: monospace;
-	
 }
 
 .TMCodeFenceBacktickClose,
 .TMCodeFenceTildeClose {
-	@apply text-sm border-t border-gray-200;
+	@apply border-t border-gray-200 text-sm;
 	font-family: monospace;
-	
 }
 
 .TMInfoString {
@@ -58,17 +54,16 @@
 }
 
 .TMCode {
-  @apply border border-gray-200;
-	
+	@apply border border-gray-200;
 }
 
 .TMBlockquote {
-  @apply border-l-4 border-gray-200 pl-2 ml-2;
+	@apply ml-2 border-l-4 border-gray-200 pl-2;
 	font-style: italic;
 }
 
 .TMMark {
-	@apply text-gray-400
+	@apply text-gray-400;
 }
 
 .TMMark_TMH1,
@@ -78,7 +73,7 @@
 
 .TMMark_TMUL,
 .TMMark_TMOL {
-	@apply text-primary-400 ml-2;
+	@apply ml-2 text-primary-400;
 }
 
 .TMImage {
@@ -87,9 +82,8 @@
 }
 
 .TMLink {
-  @apply text-primary-500 underline;
+	@apply text-primary-500 underline;
 	text-decoration: underline;
-
 }
 
 .TMLinkLabel {
@@ -112,7 +106,7 @@
 
 .TMLinkDestination,
 .TMAutolink {
-  @apply text-primary-500 underline;
+	@apply text-primary-500 underline;
 }
 
 .TMHR {
