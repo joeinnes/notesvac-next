@@ -105,7 +105,7 @@
 				</div>
 			</form>
 
-			<ul class="mt-2 w-full flex-1 divide-y overflow-hidden">
+			<ul class="mt-2 w-full flex-1 overflow-hidden">
 				{#await notes}
 					<li><p>Loading</p></li>
 				{:then noteList}

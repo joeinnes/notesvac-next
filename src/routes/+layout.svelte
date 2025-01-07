@@ -14,10 +14,10 @@
 		});
 		navigator.storage.persist().then((granted) => {
 			warnOnNonPersistence = !granted;
-			if (granted) {
-				console.log('Storage will not be cleared except by explicit user action');
-			} else {
-				console.log('Storage may be cleared under storage pressure.');
+			if (!granted) {
+				console.warn(
+					'User has not enabled persistent storage. Storage may be cleared under storage pressure.'
+				);
 			}
 		});
 	});
@@ -40,8 +40,14 @@
 					{@render children()}
 
 					{#snippet failed(error, reset)}
-						<button onclick={reset}>Oops! try again</button>
-						{JSON.stringify(error)}
+						<div class="prose">
+							<h1>Something went wrong</h1>
+							<button
+								onclick={reset}
+								class="block rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
+								>Try again</button
+							>
+						</div>
 					{/snippet}
 				</svelte:boundary>
 				<Toasts />
