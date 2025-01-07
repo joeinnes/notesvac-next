@@ -17,6 +17,8 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	let query = $state('');
 
+	let noteToDelete = $state('');
+	let showDeleteModal = $derived(noteToDelete !== '');
 	const { notes, user } = $derived($page.data);
 
 	const debouncedSearch = debounce(
@@ -30,9 +32,10 @@
 	);
 
 	const deleteNote = async (id: string) => {
-		const shouldDel = confirm('Are you sure? This cannot be undone!');
 		const currentPage = $page.data?.id;
-		if (!shouldDel) return;
+		if (currentPage === id) {
+			await goto('/');
+		}
 		await db.db
 			?.updateTable('note')
 			.set({
@@ -40,9 +43,7 @@
 			})
 			.where('id', '=', id)
 			.execute();
-		if (currentPage === id) {
-			await goto('/');
-		}
+
 		invalidateAll();
 	};
 </script>
@@ -102,8 +103,8 @@
 			<ul class="mt-2 w-full flex-1 divide-y overflow-hidden">
 				{#await notes}
 					<li><p>Loading</p></li>
-				{:then notes}
-					{#each notes as note (note.id)}
+				{:then noteList}
+					{#each noteList as note (note.id)}
 						<li
 							class="group flex w-full max-w-full items-center overflow-hidden border-b border-t-0 py-4 last:border-b-0"
 						>
@@ -121,7 +122,7 @@
 								<span class="text-xs text-gray-700">{dayjs.utc(note.created_at).fromNow()}</span>
 							</a>
 							<button
-								onclick={() => deleteNote(note.id)}
+								onclick={() => (noteToDelete = note.id)}
 								class="absolute right-0 translate-x-full transform rounded-full bg-red-500 p-1 text-white transition-transform group-hover:translate-x-0"
 								><Trash_2 class="h-4 w-4 flex-shrink-0" /></button
 							>
@@ -163,3 +164,62 @@
 		{/if}
 	</div>
 </div>
+{#if showDeleteModal}
+	<div class="absolute">
+		<div class="h-full">
+			<div class="fixed inset-0 z-10 bg-secondary-700/50"></div>
+			<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+				<div class="mx-auto overflow-hidden rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
+					<div class="relative p-6">
+						<button
+							type="button"
+							aria-label="Close"
+							onclick={() => (noteToDelete = '')}
+							class="absolute right-4 top-4 rounded-lg p-1 text-center font-medium text-secondary-500 transition-all hover:bg-secondary-100"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+								class="h-6 w-6"
+							>
+								<path
+									d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
+								/>
+							</svg>
+						</button>
+						<h3 class="text-lg font-medium text-secondary-900">Delete Note</h3>
+						<div class="mt-2 text-sm text-secondary-500">
+							Are you sure you want to delete this note? You'll be able to find it later in your
+							Deleted Notes.
+						</div>
+					</div>
+					<div class="flex justify-end gap-3 bg-secondary-50 px-6 py-3">
+						<button
+							type="button"
+							onclick={() => {
+								noteToDelete = '';
+							}}
+							class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+							>Cancel</button
+						>
+						<button
+							type="button"
+							class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+							onclick={() => {
+								if (noteToDelete) deleteNote(noteToDelete);
+								noteToDelete = '';
+							}}>Confirm</button
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<style lang="postcss">
+	::backdrop {
+		@apply bg-secondary-700/50;
+	}
+</style>

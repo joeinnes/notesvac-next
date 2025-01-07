@@ -32,11 +32,9 @@
 		{#each deletedNotes as note}
 			<div class="mx-auto w-full rounded-lg bg-white shadow">
 				<div class="flex w-full items-center justify-center p-4">
-					<div>
-						<p class="mt-1 line-clamp-3 w-full text-gray-500">
-							{#each new Array(50)}
-								{note.content}
-							{/each}
+					<div class="w-full">
+						<p class="mt-1 line-clamp-3 w-full flex-1 text-gray-500">
+							{note.content}
 						</p>
 						<span class="text-xs text-gray-700">{dayjs.utc(note.created_at).fromNow()}</span>
 					</div>

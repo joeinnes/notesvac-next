@@ -148,7 +148,7 @@
 </script>
 
 <form>
-	<div class="relative flex h-full flex-col">
+	<div class="flex h-full flex-col">
 		<div class="mx-auto mb-4 w-full rounded-lg bg-white shadow">
 			<div class="p-4">
 				<textarea use:editorAction></textarea>
@@ -300,5 +300,8 @@
 <style lang="postcss">
 	::backdrop {
 		@apply bg-secondary-700/50;
+	}
+	:global(.TinyMDE) {
+		@apply z-10;
 	}
 </style>
