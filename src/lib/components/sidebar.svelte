@@ -5,10 +5,10 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import utc from 'dayjs/plugin/utc';
-
 	dayjs.extend(utc);
-
 	dayjs.extend(relativeTime);
+
+	import { Toasts } from './Toaster/toaster.svelte';
 
 	import Icon from '$lib/icon/Icon.svelte';
 	import Settings from 'lucide-svelte/icons/settings';
@@ -32,23 +32,28 @@
 	);
 
 	const deleteNote = async (id: string) => {
-		const currentPage = $page.data?.id;
-		if (currentPage === id) {
-			await goto('/');
+		try {
+			const currentPage = $page.data?.id;
+			if (currentPage === id) {
+				await goto('/');
+			}
+			await db.db
+				?.updateTable('note')
+				.set({
+					is_deleted: true
+				})
+				.where('id', '=', id)
+				.execute();
+			Toasts.addToast('error', 'Note deleted.');
+		} catch (e) {
+			console.error(e);
+			Toasts.addToast('error', 'Something went wrong and your note could not be deleted.');
 		}
-		await db.db
-			?.updateTable('note')
-			.set({
-				is_deleted: true
-			})
-			.where('id', '=', id)
-			.execute();
-
 		invalidateAll();
 	};
 </script>
 
-<div class="flex overflow-hidden">
+<div class="flex h-full overflow-hidden">
 	<div class="flex h-full min-w-[50px] flex-col items-center gap-4 border-e p-1">
 		<a href="/" class="w-full"><Icon /></a>
 		<a href="/deleted" class="rounded p-1 transition-colors hover:bg-secondary-200"><Trash_2 /></a>
@@ -56,7 +61,7 @@
 			><Settings /></a
 		>
 	</div>
-	<div class="flex h-screen flex-col overflow-hidden border-e bg-white">
+	<div class="flex h-full flex-col overflow-hidden border-e bg-white">
 		<div class="flex-1 px-4 py-6 pt-2">
 			<div class="flex w-full items-center justify-between py-2">
 				<div class="text-foreground text-base font-medium">NotesVac</div>
@@ -105,6 +110,7 @@
 					<li><p>Loading</p></li>
 				{:then noteList}
 					{#each noteList as note (note.id)}
+						{@const createdAt = dayjs.utc(note.created_at)}
 						<li
 							class="group flex w-full max-w-full items-center overflow-hidden border-b border-t-0 py-4 last:border-b-0"
 						>
@@ -119,7 +125,11 @@
 									>
 								</div>
 
-								<span class="text-xs text-gray-700">{dayjs.utc(note.created_at).fromNow()}</span>
+								<span class="text-xs text-gray-700"
+									>{createdAt.add(25, 'days').isBefore(dayjs())
+										? createdAt.format('DD-MMM-YYYY')
+										: createdAt.fromNow()}</span
+								>
 							</a>
 							<button
 								onclick={() => (noteToDelete = note.id)}

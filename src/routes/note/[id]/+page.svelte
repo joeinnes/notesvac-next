@@ -1,11 +1,13 @@
 <script lang="ts">
 	import '$lib/styles/tiny-mde.css';
 	import debounce from 'lodash.debounce';
+	import dayjs from 'dayjs';
 	import { Editor, type CursorPosition } from 'tiny-markdown-editor';
 	import type { PageData } from './$types';
 	import { db } from '$lib/db/db.svelte';
-	import { goto, beforeNavigate, afterNavigate } from '$app/navigation';
+	import { goto, beforeNavigate, afterNavigate, invalidateAll } from '$app/navigation';
 	import { getText } from '$lib/utils/get-text';
+	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
 	let { data }: { data: PageData } = $props();
 	let { user } = $derived(data);
 	let dialog: HTMLDialogElement | undefined = $state();
@@ -19,12 +21,16 @@
 		keywords: string | null;
 		summary: string | null;
 		is_deleted: boolean;
+		created_at: Date;
+		last_updated: Date;
 	} = $state({
 		id: '',
 		content: demoContent,
 		keywords: '',
 		summary: '',
-		is_deleted: false
+		is_deleted: false,
+		created_at: new Date(),
+		last_updated: new Date()
 	});
 	let loading = $state(true);
 	let focusInEditor = $state(false);
@@ -39,7 +45,11 @@
 
 				.then((res) => {
 					if (res) {
-						note = res;
+						note = {
+							...res,
+							created_at: new Date(res.created_at),
+							last_updated: new Date(res.last_updated)
+						};
 						editor?.setContent(res.content || '');
 						if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 					} else {
@@ -55,7 +65,9 @@
 				content: demoContent,
 				keywords: '',
 				summary: '',
-				is_deleted: false
+				is_deleted: false,
+				last_updated: new Date(),
+				created_at: new Date()
 			};
 		}
 	});
@@ -65,7 +77,11 @@
 
 	const saveNote = async () => {
 		if (!note || !db?.db) return;
-		let noteToInsert = { ...note };
+		let noteToInsert = {
+			...note,
+			created_at: note.created_at.toISOString(),
+			last_updated: note.last_updated.toISOString()
+		};
 		if (!noteToInsert.id || noteToInsert.id === '') {
 			noteToInsert.id = crypto.randomUUID();
 		}
@@ -84,12 +100,12 @@
 			});
 		note.id = noteToInsert.id;
 		if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
+		invalidateAll();
 		return;
 	};
 
 	const debouncedSave = debounce(() => {
 		saveNote();
-		// dirty = false;
 	}, 2000);
 
 	const editorAction = (el: HTMLTextAreaElement) => {
@@ -179,7 +195,14 @@
 			<button
 				type="button"
 				class="rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
-				onclick={saveNote}
+				onclick={async () => {
+					try {
+						await saveNote();
+						Toasts.addToast('success', 'Saved successfully!');
+					} catch (e) {
+						Toasts.addToast('error', 'Something went wrong and your note was not saved.');
+					}
+				}}
 			>
 				Save This Note
 			</button>
@@ -214,7 +237,7 @@
 					class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 					name="keywords"
 					bind:value={note.keywords}
-					onchange={() => debouncedSave()}
+					onchange={() => saveNote()}
 				/>
 			</div>
 			<div class="mb-2">
@@ -226,9 +249,40 @@
 					class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 					name="summary"
 					bind:value={note.summary}
-					onchange={() => debouncedSave()}
+					onchange={() => saveNote()}
 				></textarea>
 			</div>
+		</div>
+
+		<div class="mb-2">
+			<label for="created_at" class="block text-xs font-medium text-gray-700"> Created Date </label>
+
+			<input
+				type="date"
+				id="created_at"
+				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+				name="created_at"
+				bind:value={() => dayjs(note.created_at).format('YYYY-MM-DD'),
+				(v) => (note.created_at = new Date(v))}
+				onchange={() => saveNote()}
+			/>
+		</div>
+
+		<div class="mb-2">
+			<label for="last_updated" class="block text-xs font-medium text-gray-700">
+				Last Updated
+			</label>
+
+			<input
+				type="date"
+				id="last_updated"
+				placeholder="last_updated"
+				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+				name="last_updated"
+				bind:value={() => dayjs(note.last_updated).format('YYYY-MM-DD'),
+				(v) => (note.last_updated = new Date(v))}
+				onchange={() => saveNote()}
+			/>
 		</div>
 	</details>
 </form>
@@ -280,9 +334,11 @@
 					note.summary = res?.summary || '';
 					await saveNote();
 					dialog?.close();
+					Toasts.addToast('success', 'Your handwriting was successfully transcribed.');
 				} catch (e) {
 					console.error(e);
 					dialog?.close();
+					Toasts.addToast('error', 'There was an error transcribing your handwriting.');
 				} finally {
 					uploadingHandwriting = false;
 				}
