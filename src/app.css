@@ -2,11 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-
+body {
+	overflow: hidden;
+}
 .markdown-body {
-  @apply prose prose-base prose-stone;
+	@apply prose prose-base prose-stone;
 }
 
 :-moz-focusring {
-  outline: none; /** Reset needed for Firefox */
+	outline: none; /** Reset needed for Firefox */
 }

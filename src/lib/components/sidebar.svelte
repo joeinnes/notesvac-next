@@ -13,6 +13,7 @@
 	import Icon from '$lib/icon/Icon.svelte';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
+	import Search from 'lucide-svelte/icons/search';
 	import { db } from '$lib/db/db.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	let query = $state('');
@@ -53,15 +54,17 @@
 	};
 </script>
 
-<div class="flex h-full overflow-hidden">
-	<div class="flex h-full min-w-[50px] flex-col items-center gap-4 border-e p-1">
+<div class="flex h-full overflow-hidden bg-secondary-50 shadow-md">
+	<div
+		class="flex h-full min-w-[50px] flex-col items-center gap-4 border-e border-secondary-100 p-1"
+	>
 		<a href="/" class="w-full"><Icon /></a>
 		<a href="/deleted" class="rounded p-1 transition-colors hover:bg-secondary-200"><Trash_2 /></a>
 		<a href="/settings" class="mt-auto rounded p-1 transition-colors hover:bg-secondary-200"
 			><Settings /></a
 		>
 	</div>
-	<div class="flex h-full flex-col overflow-hidden border-e bg-white">
+	<div class="flex h-full flex-col overflow-hidden border-e border-secondary-100 bg-secondary-50">
 		<div class="flex-1 px-4 py-6 pt-2">
 			<div class="flex w-full items-center justify-between py-2">
 				<div class="text-foreground text-base font-medium">NotesVac</div>
@@ -86,20 +89,7 @@
 						<button type="button" class="text-gray-600 hover:text-gray-700">
 							<span class="sr-only">Search</span>
 
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="size-4"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-								/>
-							</svg>
+							<Search />
 						</button>
 					</span>
 				</div>
@@ -157,7 +147,7 @@
 
 		{#if user && (user.name || user.avatar)}
 			<div class="border-t border-gray-100">
-				<a href="/me" class="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
+				<a href="/" class="flex items-center gap-2 p-4 hover:bg-gray-50">
 					{#if user.avatar}
 						<img alt="" src={user.avatar} class="size-10 rounded-full object-cover" />
 					{/if}

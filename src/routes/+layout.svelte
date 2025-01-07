@@ -35,7 +35,7 @@
 			>
 				<Sidebar />
 			</div>
-			<main class="h-full flex-1 overflow-y-auto p-4">
+			<main class="h-full flex-1 overflow-y-auto">
 				<svelte:boundary>
 					{@render children()}
 
