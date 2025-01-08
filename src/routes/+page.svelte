@@ -74,3 +74,9 @@
 		features.</small
 	>
 </div>
+1. World-leading handwriting transcription using OpenAI's gpt-4o multimodal AI to produce outstanding
+results, or a more cost-effective solution through the Google Cloud Vision API. 2. Notes are saved locally
+in your browser. You control and own your data. You can download your database for maximum redundancy,
+or export your notes to markdown files for maximum compatibility with other tools. 3. Top-class search
+using SQLite's FTS5, optimized with advanced stemming, Unicode support, and weighted relevance ranking,
+ensuring you find the right note effortlessly—even in large, complex collections.

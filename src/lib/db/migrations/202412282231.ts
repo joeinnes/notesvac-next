@@ -27,7 +27,7 @@ export async function up(db: Kysely<Database>): Promise<void> {
 		.addColumn('created_at', 'text', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`))
 		.execute();
 
-	await sql`CREATE VIRTUAL TABLE notes_search using fts5(title, content, keywords, summary, tokenize = 'porter unicode61');`.execute(
+	await sql`CREATE VIRTUAL TABLE notes_search using fts5(title, content, keywords, summary, tokenize = 'porter unicode61 tokenchars="-." separators="@#"');`.execute(
 		db
 	);
 

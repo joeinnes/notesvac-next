@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '$lib/styles/tiny-mde.css';
+	import InkMde from 'ink-mde/svelte';
 	import debounce from 'lodash.debounce';
 	import dayjs from 'dayjs';
 	import { Editor, type CursorPosition } from 'tiny-markdown-editor';
@@ -13,11 +13,11 @@
 	let dialog: HTMLDialogElement | undefined = $state();
 	let uploadingHandwriting = $state(false);
 	const demoContent =
-		'# Welcome\n\nEdit this note. You can use **most** basic [Markdown](https://www.markdownguide.org/cheat-sheet/) syntax __if__ you like...';
+		'# Welcome\nEdit this note. You can use **most** basic [Markdown](https://www.markdownguide.org/cheat-sheet/) syntax __if__ you like...';
 	const { id } = $derived(data);
 	let note: {
 		id: string;
-		content: string | null;
+		content: string | undefined;
 		keywords: string | null;
 		summary: string | null;
 		is_deleted: boolean;
@@ -36,22 +36,20 @@
 	let focusInEditor = $state(false);
 
 	$effect(() => {
-		if (db?.db && id && id !== 'new' && editor) {
+		if (db?.db && id && id !== 'new') {
 			db.db
 				.selectFrom('note')
 				.selectAll()
 				.where('id', '=', id)
 				.executeTakeFirst()
-
 				.then((res) => {
 					if (res) {
 						note = {
 							...res,
+							content: res.content || undefined,
 							created_at: new Date(res.created_at),
 							last_updated: new Date(res.last_updated)
 						};
-						editor?.setContent(res.content || '');
-						if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 					} else {
 						goto('/note/new');
 					}
@@ -76,7 +74,7 @@
 	let anchor: CursorPosition | null | undefined = $state();
 
 	const saveNote = async () => {
-		if (!note || !db?.db) return;
+		if (!note || !db?.db || note.content === demoContent) return;
 		let noteToInsert = {
 			...note,
 			created_at: note.created_at.toISOString(),
@@ -108,27 +106,15 @@
 		saveNote();
 	}, 2000);
 
-	const editorAction = (el: HTMLTextAreaElement) => {
-		editor = new Editor({ textarea: el, content: note.content || '' });
-		editor.addEventListener('change', (e) => {
-			note.content = e.content;
-			debouncedSave();
-		});
-
-		return {
-			destroy: () => {
-				if (note.content !== demoContent) {
-					saveNote();
-				}
-				editor = undefined;
-			}
-		};
-	};
 	let imagePreview: string = $state('');
 	let showMeta = $state(false);
 	let files: FileList | undefined = $state();
 	import { resizeImage } from '$lib/utils/resize-image';
 	let resizedFile = $state();
+	$effect(() => {
+		note.content;
+		debouncedSave();
+	});
 	$effect(() => {
 		let image = files ? files[0] : null;
 		if (!files || !image) {
@@ -148,20 +134,6 @@
 			})
 			.catch((e) => console.error(e));
 	});
-	$effect(() => {
-		const onFocus = () => {
-			focusInEditor = true;
-		};
-		const onBlur = () => {
-			focusInEditor = false;
-		};
-		document.querySelector('.TinyMDE')?.addEventListener('focus', onFocus);
-		document.querySelector('.TinyMDE')?.addEventListener('blur', onBlur);
-		return () => {
-			document.querySelector('.TinyMDE')?.removeEventListener('focus', onFocus);
-			document.querySelector('.TinyMDE')?.removeEventListener('blur', onBlur);
-		};
-	});
 </script>
 
 <div class="overflow-hidden">
@@ -169,12 +141,93 @@
 		<form class="h-full w-full p-4">
 			<div class="flex h-full flex-col">
 				<div class="mx-auto mb-4 w-full rounded-lg bg-white shadow">
-					<div class="p-4">
-						<textarea use:editorAction></textarea>
+					<InkMde
+						bind:value={note.content}
+						options={{
+							readability: true
+						}}
+					/>
+				</div>
+				<div
+					class="group absolute bottom-0 right-0 top-0 max-w-md transform border-s border-secondary-100 bg-secondary-200 p-4 shadow-sm transition-transform"
+					class:translate-x-full={!showMeta}
+				>
+					<button
+						class="absolute left-0 -translate-x-full transform rounded-l-full bg-secondary-200 px-3 py-1 text-2xl"
+						onclick={() => (showMeta = !showMeta)}
+					>
+						<span class="inline-block transform transition-transform" class:rotate-180={showMeta}
+							>&larr;</span
+						>
+					</button>
+					<h2 class="mb-2 mt-1 text-2xl font-semibold text-primary-900">Metadata</h2>
+
+					<div class="w-full pb-4 text-secondary-500">
+						<div class="mb-2">
+							<label for="keywords" class="block text-xs font-medium text-gray-700">
+								Keywords
+							</label>
+
+							<input
+								type="text"
+								id="keywords"
+								placeholder="keywords"
+								class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+								name="keywords"
+								bind:value={note.keywords}
+								onchange={() => saveNote()}
+							/>
+						</div>
+						<div class="mb-2">
+							<label for="summary" class="block text-xs font-medium text-gray-700"> Summary </label>
+
+							<textarea
+								id="summary"
+								placeholder="summary"
+								class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+								name="summary"
+								rows={10}
+								bind:value={note.summary}
+								onchange={() => saveNote()}
+							></textarea>
+						</div>
+					</div>
+
+					<div class="mb-2">
+						<label for="created_at" class="block text-xs font-medium text-gray-700">
+							Created Date
+						</label>
+
+						<input
+							type="date"
+							id="created_at"
+							class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+							name="created_at"
+							bind:value={() => dayjs(note.created_at).format('YYYY-MM-DD'),
+							(v) => (note.created_at = new Date(v))}
+							onchange={() => saveNote()}
+						/>
+					</div>
+
+					<div class="mb-2">
+						<label for="last_updated" class="block text-xs font-medium text-gray-700">
+							Last Updated
+						</label>
+
+						<input
+							type="date"
+							id="last_updated"
+							placeholder="last_updated"
+							class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+							name="last_updated"
+							bind:value={() => dayjs(note.last_updated).format('YYYY-MM-DD'),
+							(v) => (note.last_updated = new Date(v))}
+							onchange={() => saveNote()}
+						/>
 					</div>
 				</div>
 
-				<div class="relative flex justify-end gap-2">
+				<div class="flex justify-end gap-2">
 					{#if (user?.handwriting_api_choice === 'GCP' && user.gcp_api_key) || (user?.handwriting_api_choice === 'ChatGPT' && user.openai_api_key)}
 						<button
 							type="button"
@@ -278,83 +331,6 @@
 				</form>
 			</div>
 		</dialog>
-
-		<div
-			class="group absolute bottom-0 right-0 top-0 max-w-md transform border-s border-secondary-100 bg-secondary-200 p-4 shadow transition-transform"
-			class:translate-x-full={!showMeta}
-		>
-			<button
-				class="absolute left-0 -translate-x-full transform rounded-l-full bg-secondary-200 px-2"
-				onclick={() => (showMeta = !showMeta)}
-			>
-				<span class="inline-block transform transition-transform" class:rotate-180={showMeta}
-					>&larr;</span
-				>
-			</button>
-			<h2 class="mb-2 text-xl font-semibold text-primary-900">Metadata</h2>
-
-			<div class="w-full pb-4 text-secondary-500">
-				<div class="mb-2">
-					<label for="keywords" class="block text-xs font-medium text-gray-700"> Keywords </label>
-
-					<input
-						type="text"
-						id="keywords"
-						placeholder="keywords"
-						class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
-						name="keywords"
-						bind:value={note.keywords}
-						onchange={() => saveNote()}
-					/>
-				</div>
-				<div class="mb-2">
-					<label for="summary" class="block text-xs font-medium text-gray-700"> Summary </label>
-
-					<textarea
-						id="summary"
-						placeholder="summary"
-						class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
-						name="summary"
-						rows={10}
-						bind:value={note.summary}
-						onchange={() => saveNote()}
-					></textarea>
-				</div>
-			</div>
-
-			<div class="mb-2">
-				<label for="created_at" class="block text-xs font-medium text-gray-700">
-					Created Date
-				</label>
-
-				<input
-					type="date"
-					id="created_at"
-					class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
-					name="created_at"
-					bind:value={() => dayjs(note.created_at).format('YYYY-MM-DD'),
-					(v) => (note.created_at = new Date(v))}
-					onchange={() => saveNote()}
-				/>
-			</div>
-
-			<div class="mb-2">
-				<label for="last_updated" class="block text-xs font-medium text-gray-700">
-					Last Updated
-				</label>
-
-				<input
-					type="date"
-					id="last_updated"
-					placeholder="last_updated"
-					class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
-					name="last_updated"
-					bind:value={() => dayjs(note.last_updated).format('YYYY-MM-DD'),
-					(v) => (note.last_updated = new Date(v))}
-					onchange={() => saveNote()}
-				/>
-			</div>
-		</div>
 	</div>
 </div>
 
@@ -362,7 +338,24 @@
 	::backdrop {
 		@apply bg-secondary-700/50;
 	}
-	:global(.TinyMDE) {
-		@apply z-10;
+	:global(.ink) {
+		@apply !border-0 focus:outline-none;
+	}
+
+	:global(.ink-mde) {
+		@apply !border-0;
+	}
+
+	:global(.ink-mde .ink-mde-editor) {
+		@apply !p-4;
+	}
+
+	/* Overwrite Codemirror's default markdown here. */
+	:global(.cm-focused) {
+		@apply !outline-none;
+	}
+
+	:global(.ink-mde-details) {
+		@apply !bg-secondary-50;
 	}
 </style>
