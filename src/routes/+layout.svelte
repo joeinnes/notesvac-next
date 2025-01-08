@@ -3,15 +3,17 @@
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import Sidebar from '$lib/components/sidebar.svelte';
-	let { children }: { data: LayoutData; children: Snippet } = $props();
-	import { db } from '$lib/db/db.svelte';
+	let { children, data }: { data: LayoutData; children: Snippet } = $props();
+	const { db } = $derived(data);
+	// import { db } from '$lib/db/db.svelte';
 	import PersistenceWarning from '$lib/components/PersistenceWarning.svelte';
 	import Toasts from '$lib/components/Toaster/Toasts.svelte';
 	let warnOnNonPersistence = $state(false);
 	$effect(() => {
-		import('$lib/db').then(({ db: database }) => {
-			db.db = database;
-		});
+		/*import('$lib/db').then(async ({ db: database }) => {
+			const thisDb = await database();
+			db.db = thisDb;
+		});*/
 		navigator.storage.persist().then((granted) => {
 			warnOnNonPersistence = !granted;
 			if (!granted) {
@@ -24,7 +26,7 @@
 </script>
 
 <svelte:head><title>NotesVac</title></svelte:head>
-{#if db && db.ready}
+{#if db}
 	<div class="flex h-screen max-h-screen flex-col">
 		{#if warnOnNonPersistence}
 			<PersistenceWarning {warnOnNonPersistence}></PersistenceWarning>
@@ -54,6 +56,4 @@
 			</main>
 		</div>
 	</div>
-{:else}
-	Loading...
 {/if}

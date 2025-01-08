@@ -47,7 +47,6 @@
 		"lodash.debounce": "^4.0.8",
 		"openai": "^4.76.1",
 		"sqlocal": "^0.13.0",
-		"tiny-markdown-editor": "^0.1.31",
 		"zod": "^3.24.1"
 	}
 }

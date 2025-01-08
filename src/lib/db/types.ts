@@ -1,9 +1,10 @@
 import type { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
-
 export interface Database {
 	user: UserTable;
 	note: NoteTable;
 	notes_search: NoteSearchTable;
+	transcription: TranscriptionTable;
+	note_transcription: NoteTranscriptionTable;
 }
 
 export interface UserTable {
@@ -41,3 +42,27 @@ export interface NoteSearchTable extends NoteTable {
 	rowid: number;
 }
 export type NoteSearch = Selectable<NoteSearchTable>;
+
+export interface TranscriptionTable {
+	id: string;
+	image_hash: string;
+	image: string;
+	content: string;
+	keywords: string;
+	summary: string;
+	is_deleted: boolean;
+	created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export type Transcription = Selectable<TranscriptionTable>;
+export type NewTranscription = Insertable<TranscriptionTable>;
+export type TranscriptionUpdate = Updateable<TranscriptionTable>;
+
+export interface NoteTranscriptionTable {
+	note_id: string;
+	transcription_id: string;
+}
+
+export type NoteTranscription = Selectable<NoteTranscriptionTable>;
+export type NewNoteTranscription = Insertable<NoteTranscriptionTable>;
+export type NoteTranscriptionUpdate = Updateable<NoteTranscriptionTable>;

@@ -2,13 +2,12 @@
 	import InkMde from 'ink-mde/svelte';
 	import debounce from 'lodash.debounce';
 	import dayjs from 'dayjs';
-	import { Editor, type CursorPosition } from 'tiny-markdown-editor';
 	import type { PageData } from './$types';
-	import { db } from '$lib/db/db.svelte';
-	import { goto, beforeNavigate, afterNavigate, invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getText } from '$lib/utils/get-text';
 	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
 	let { data }: { data: PageData } = $props();
+	const { db } = $derived(data);
 	let { user } = $derived(data);
 	let dialog: HTMLDialogElement | undefined = $state();
 	let uploadingHandwriting = $state(false);
@@ -23,6 +22,10 @@
 		is_deleted: boolean;
 		created_at: Date;
 		last_updated: Date;
+		transcriptions?: {
+			image: string;
+			image_hash: string;
+		}[];
 	} = $state({
 		id: '',
 		content: demoContent,
@@ -36,19 +39,25 @@
 	let focusInEditor = $state(false);
 
 	$effect(() => {
-		if (db?.db && id && id !== 'new') {
-			db.db
-				.selectFrom('note')
+		if (db && id && id !== 'new') {
+			db.selectFrom('note')
+				.innerJoin('note_transcription', 'note.id', 'note_transcription.note_id')
+				.innerJoin('transcription', 'note_transcription.transcription_id', 'transcription.id')
 				.selectAll()
 				.where('id', '=', id)
-				.executeTakeFirst()
+				.execute()
 				.then((res) => {
 					if (res) {
+						const first = res[0];
 						note = {
-							...res,
-							content: res.content || undefined,
-							created_at: new Date(res.created_at),
-							last_updated: new Date(res.last_updated)
+							id,
+							content: first.content || undefined,
+							summary: first.summary,
+							keywords: first.keywords,
+							is_deleted: first.is_deleted,
+							created_at: new Date(first.created_at),
+							last_updated: new Date(first.last_updated),
+							transcriptions: res.map((row) => ({ image: row.image, image_hash: row.image_hash }))
 						};
 					} else {
 						goto('/note/new');
@@ -70,11 +79,8 @@
 		}
 	});
 
-	let editor: Editor | undefined = $state();
-	let anchor: CursorPosition | null | undefined = $state();
-
 	const saveNote = async () => {
-		if (!note || !db?.db || note.content === demoContent) return;
+		if (!note || !db || note.content === demoContent) return;
 		let noteToInsert = {
 			...note,
 			created_at: note.created_at.toISOString(),
@@ -83,12 +89,11 @@
 		if (!noteToInsert.id || noteToInsert.id === '') {
 			noteToInsert.id = crypto.randomUUID();
 		}
-		const response = await db.db
+		const response = await db
 			.insertInto('note')
 			.values({ ...noteToInsert })
 			.onConflict((oc) => oc.column('id').doUpdateSet({ ...noteToInsert }))
 			.execute();
-		anchor = editor?.getSelection(false);
 
 		if (id === 'new')
 			await goto(`/note/${noteToInsert.id}`, {
@@ -97,7 +102,6 @@
 				invalidateAll: true
 			});
 		note.id = noteToInsert.id;
-		if (focusInEditor) editor?.setSelection(anchor || { row: 0, col: 0 }, null);
 		invalidateAll();
 		return;
 	};
@@ -110,6 +114,7 @@
 	let showMeta = $state(false);
 	let files: FileList | undefined = $state();
 	import { resizeImage } from '$lib/utils/resize-image';
+	import { hashString } from '$lib/utils/hash';
 	let resizedFile = $state();
 	$effect(() => {
 		note.content;
@@ -148,8 +153,46 @@
 						}}
 					/>
 				</div>
+
+				<div class="flex justify-end gap-2">
+					{#if (user?.handwriting_api_choice === 'GCP' && user.gcp_api_key) || (user?.handwriting_api_choice === 'ChatGPT' && user.openai_api_key)}
+						<button
+							type="button"
+							class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+							onclick={() => {
+								dialog?.showModal();
+							}}
+						>
+							Upload Handwriting
+						</button>
+					{:else}
+						<button
+							type="button"
+							class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+							disabled
+							title="You need to set up an API key in your settings to use this feature."
+						>
+							Upload Handwriting
+						</button>
+					{/if}
+					<button
+						type="button"
+						class="rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+						onclick={async () => {
+							try {
+								await saveNote();
+								Toasts.addToast('success', 'Saved successfully!');
+							} catch (e) {
+								Toasts.addToast('error', 'Something went wrong and your note was not saved.');
+							}
+						}}
+					>
+						Save This Note
+					</button>
+				</div>
+
 				<div
-					class="group absolute bottom-0 right-0 top-0 max-w-md transform border-s border-secondary-100 bg-secondary-200 p-4 shadow-sm transition-transform"
+					class="group absolute bottom-0 right-0 top-0 w-full max-w-lg transform border-s border-secondary-100 bg-secondary-200 p-4 shadow-sm transition-transform"
 					class:translate-x-full={!showMeta}
 				>
 					<button
@@ -225,43 +268,16 @@
 							onchange={() => saveNote()}
 						/>
 					</div>
-				</div>
 
-				<div class="flex justify-end gap-2">
-					{#if (user?.handwriting_api_choice === 'GCP' && user.gcp_api_key) || (user?.handwriting_api_choice === 'ChatGPT' && user.openai_api_key)}
-						<button
-							type="button"
-							class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
-							onclick={() => {
-								dialog?.showModal();
-							}}
-						>
-							Upload Handwriting
-						</button>
-					{:else}
-						<button
-							type="button"
-							class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
-							disabled
-							title="You need to set up an API key in your settings to use this feature."
-						>
-							Upload Handwriting
-						</button>
-					{/if}
-					<button
-						type="button"
-						class="rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
-						onclick={async () => {
-							try {
-								await saveNote();
-								Toasts.addToast('success', 'Saved successfully!');
-							} catch (e) {
-								Toasts.addToast('error', 'Something went wrong and your note was not saved.');
-							}
-						}}
-					>
-						Save This Note
-					</button>
+					<div class="mb-2">
+						<p class="block text-xs font-medium text-gray-700">Associated Images</p>
+						{#if note.transcriptions}
+							{#each note.transcriptions as transcription, i}
+								<img src={`data:image/jpeg;base64,${transcription.image}`} alt={note.summary} />
+								{i}
+							{/each}
+						{/if}
+					</div>
 				</div>
 			</div>
 		</form>
@@ -291,27 +307,61 @@
 					method="dialog"
 					class="text-end"
 					onsubmit={async (e) => {
-						await saveNote(); // In case note does not yet exist, create it
 						e.preventDefault();
+						await saveNote(); // In case note does not yet exist, create it
 						uploadingHandwriting = true;
 						if (!user) return;
 						const apiKey =
 							user.handwriting_api_choice === 'GCP' ? user.gcp_api_key : user.openai_api_key;
 						if (!apiKey) return;
 						try {
-							const res = await getText(
-								user.handwriting_api_choice || 'GCP',
-								apiKey,
-								imagePreview.split('data:image/jpeg;base64,')[1]
-							);
-
-							const content = editor?.getContent();
-							editor?.setContent(
-								(content && content !== demoContent ? content + '\n\n' : '') + res?.text || ''
-							); // Overwrite demo content automatically.
+							const b64 = imagePreview.split('data:image/jpeg;base64,')[1];
+							const hash = await hashString(b64);
+							const transcription = await db
+								?.selectFrom('transcription')
+								.selectAll()
+								.where('image_hash', '=', hash)
+								.executeTakeFirst();
+							if (transcription) {
+								note.content = transcription.content;
+								note.keywords = transcription.keywords;
+								note.summary = transcription.summary;
+								dialog?.close();
+								Toasts.addToast(
+									'success',
+									'A match was found for this transcription. No credits were used.'
+								);
+								return;
+							}
+							const res = await getText(user.handwriting_api_choice || 'GCP', apiKey, b64);
+							note.content =
+								(note.content && note.content !== demoContent ? note.content + '\n\n' : '') +
+									res?.text || '';
 							note.keywords = res?.keywords || '';
 							note.summary = res?.summary || '';
-							await saveNote();
+							const saveTranscription = await db?.transaction().execute(async (trx) => {
+								const transcription = await trx
+									.insertInto('transcription')
+									.values({
+										content: res?.text,
+										keywords: res?.keywords || '',
+										summary: res?.summary || '',
+										id: crypto.randomUUID(),
+										image_hash: hash,
+										image: imagePreview,
+										is_deleted: false
+									})
+									.returning('id')
+									.executeTakeFirstOrThrow();
+								return await trx
+									.insertInto('note_transcription')
+									.values({
+										note_id: note.id,
+										transcription_id: transcription.id
+									})
+									.returningAll()
+									.executeTakeFirst();
+							});
 							dialog?.close();
 							Toasts.addToast('success', 'Your handwriting was successfully transcribed.');
 						} catch (e) {
