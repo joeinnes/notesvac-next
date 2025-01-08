@@ -101,11 +101,11 @@
 					{#each noteList as note (note.id)}
 						{@const createdAt = dayjs.utc(note.created_at)}
 						<li
-							class="group flex w-full max-w-full items-center overflow-hidden border-b border-t-0 py-4 last:border-b-0"
+							class="border-t-0last:border-b-0 group flex w-full max-w-full items-center overflow-hidden border-b"
 						>
 							<a
 								href="/note/{note.id}{query && '?q=' + query}"
-								class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap text-sm leading-tight"
+								class=" hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap py-4 text-sm leading-tight"
 							>
 								<div class="flex w-full justify-between">
 									<span class="block w-full truncate"
