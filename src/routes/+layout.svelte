@@ -26,7 +26,7 @@
 </script>
 
 <svelte:head><title>NotesVac</title></svelte:head>
-{#if db}
+{#await db then db}
 	<div class="flex h-screen max-h-screen flex-col">
 		{#if warnOnNonPersistence}
 			<PersistenceWarning {warnOnNonPersistence}></PersistenceWarning>
@@ -56,4 +56,4 @@
 			</main>
 		</div>
 	</div>
-{/if}
+{/await}

@@ -1,5 +1,5 @@
 import { SQLocalKysely } from 'sqlocal/kysely';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import type { Database } from './types';
 import { Migrator } from 'kysely';
 import { Migration202412282231 } from './migrations/202412282231';
@@ -11,9 +11,7 @@ const { dialect, deleteDatabaseFile, getDatabaseFile, overwriteDatabaseFile } = 
 
 export const db = async () => {
 	const thisDb = new Kysely<Database>({ dialect });
-
 	await migrateToLatest(thisDb);
-	console.log('migrations run');
 	return thisDb;
 };
 

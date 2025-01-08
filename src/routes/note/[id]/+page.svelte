@@ -3,17 +3,17 @@
 	import debounce from 'lodash.debounce';
 	import dayjs from 'dayjs';
 	import type { PageData } from './$types';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { resizeImage } from '$lib/utils/resize-image';
+	import { hashString } from '$lib/utils/hash';
+	import { goto, beforeNavigate } from '$app/navigation';
 	import { getText } from '$lib/utils/get-text';
 	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
 	let { data }: { data: PageData } = $props();
-	const { db } = $derived(data);
-	let { user } = $derived(data);
+	const { db, user, id, note: dbNote } = $derived(data);
 	let dialog: HTMLDialogElement | undefined = $state();
 	let uploadingHandwriting = $state(false);
 	const demoContent =
 		'# Welcome\nEdit this note. You can use **most** basic [Markdown](https://www.markdownguide.org/cheat-sheet/) syntax __if__ you like...';
-	const { id } = $derived(data);
 	let note: {
 		id: string;
 		content: string | undefined;
@@ -23,8 +23,8 @@
 		created_at: Date;
 		last_updated: Date;
 		transcriptions?: {
-			image: string;
-			image_hash: string;
+			image?: string | null;
+			image_hash: string | null;
 		}[];
 	} = $state({
 		id: '',
@@ -32,78 +32,48 @@
 		keywords: '',
 		summary: '',
 		is_deleted: false,
-		created_at: new Date(),
-		last_updated: new Date()
+		last_updated: new Date(),
+		created_at: new Date()
 	});
 	let loading = $state(true);
-	let focusInEditor = $state(false);
 
 	$effect(() => {
-		if (db && id && id !== 'new') {
-			db.selectFrom('note')
-				.innerJoin('note_transcription', 'note.id', 'note_transcription.note_id')
-				.innerJoin('transcription', 'note_transcription.transcription_id', 'transcription.id')
-				.selectAll()
-				.where('id', '=', id)
-				.execute()
-				.then((res) => {
-					if (res) {
-						const first = res[0];
-						note = {
-							id,
-							content: first.content || undefined,
-							summary: first.summary,
-							keywords: first.keywords,
-							is_deleted: first.is_deleted,
-							created_at: new Date(first.created_at),
-							last_updated: new Date(first.last_updated),
-							transcriptions: res.map((row) => ({ image: row.image, image_hash: row.image_hash }))
-						};
-					} else {
-						goto('/note/new');
-					}
-				})
-				.finally(() => {
-					loading = false;
-				});
-		} else if (id === 'new') {
-			note = {
-				id: '',
-				content: demoContent,
-				keywords: '',
-				summary: '',
-				is_deleted: false,
-				last_updated: new Date(),
-				created_at: new Date()
-			};
-		}
+		if (!dbNote) return;
+		note = dbNote;
 	});
 
+	beforeNavigate(() => {
+		saveNote();
+	});
 	const saveNote = async () => {
 		if (!note || !db || note.content === demoContent) return;
+		const { transcriptions, ...snapshot } = $state.snapshot(note);
 		let noteToInsert = {
-			...note,
+			...snapshot,
 			created_at: note.created_at.toISOString(),
 			last_updated: note.last_updated.toISOString()
 		};
 		if (!noteToInsert.id || noteToInsert.id === '') {
 			noteToInsert.id = crypto.randomUUID();
 		}
-		const response = await db
-			.insertInto('note')
-			.values({ ...noteToInsert })
-			.onConflict((oc) => oc.column('id').doUpdateSet({ ...noteToInsert }))
-			.execute();
 
-		if (id === 'new')
-			await goto(`/note/${noteToInsert.id}`, {
-				replaceState: true,
-				keepFocus: true,
-				invalidateAll: true
-			});
-		note.id = noteToInsert.id;
-		invalidateAll();
-		return;
+		try {
+			const response = await db
+				.insertInto('note')
+				.values({ ...noteToInsert })
+				.onConflict((oc) => oc.column('id').doUpdateSet({ ...noteToInsert }))
+				.execute();
+			if (id === 'new')
+				await goto(`/note/${noteToInsert.id}`, {
+					replaceState: true,
+					keepFocus: true,
+					invalidateAll: true
+				});
+			note.id = noteToInsert.id;
+			return;
+		} catch (e) {
+			console.error(e);
+		}
 	};
 
 	const debouncedSave = debounce(() => {
@@ -113,13 +83,9 @@
 	let imagePreview: string = $state('');
 	let showMeta = $state(false);
 	let files: FileList | undefined = $state();
-	import { resizeImage } from '$lib/utils/resize-image';
-	import { hashString } from '$lib/utils/hash';
+
 	let resizedFile = $state();
-	$effect(() => {
-		note.content;
-		debouncedSave();
-	});
+
 	$effect(() => {
 		let image = files ? files[0] : null;
 		if (!files || !image) {
@@ -149,7 +115,10 @@
 					<InkMde
 						bind:value={note.content}
 						options={{
-							readability: true
+							readability: true,
+							hooks: {
+								beforeUpdate: debouncedSave
+							}
 						}}
 					/>
 				</div>
