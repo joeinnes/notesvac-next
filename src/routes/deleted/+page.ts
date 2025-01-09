@@ -4,10 +4,11 @@ import { sql } from 'kysely';
 
 export const ssr = false;
 
-export const load: PageLoad = async ({ url }) => {
+export const load: PageLoad = async ({ url, parent }) => {
 	if (!browser) return;
 	try {
-		const { db } = await import('$lib/db');
+		const { db } = await parent();
+		if (!db) return;
 		let notesFromDb;
 		const q = url.searchParams.get('q');
 		const from = url.searchParams.get('from');

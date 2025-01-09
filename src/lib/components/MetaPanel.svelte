@@ -1,0 +1,79 @@
+<script lang="ts">
+	import dayjs from 'dayjs';
+	import InputField from '$lib/components/InputField.svelte';
+	import DeleteNoteModal from '$lib/components/DeleteNoteModal.svelte';
+	let { note = $bindable(), saveNote } = $props();
+	let showMeta = $state(false);
+	let showDeleteModal = $state(false);
+</script>
+
+<div
+	class="group absolute bottom-0 right-0 top-0 w-full max-w-lg transform border-s border-secondary-100 bg-secondary-200 p-4 shadow-sm transition-transform"
+	class:translate-x-full={!showMeta}
+>
+	<button
+		class="absolute left-0 -translate-x-full transform rounded-l-full bg-secondary-200 px-3 py-1 text-2xl"
+		onclick={() => (showMeta = !showMeta)}
+	>
+		<span class="inline-block transform transition-transform" class:rotate-180={showMeta}
+			>&larr;</span
+		>
+	</button>
+	<div class="h-full overflow-y-auto">
+		<h2 class="mb-2 mt-1 text-2xl font-semibold text-primary-900">Metadata</h2>
+
+		<div class="w-full pb-4 text-secondary-500">
+			<InputField
+				id="keywords"
+				label="Keywords"
+				bind:value={note.keywords}
+				onChange={() => saveNote(note)}
+			/>
+			<InputField
+				id="summary"
+				label="Summary"
+				bind:value={note.summary}
+				onChange={() => saveNote(note)}
+				type="textarea"
+			/>
+		</div>
+
+		<InputField
+			id="created_at"
+			label="Created Date"
+			bind:value={() => dayjs(note.created_at).format('YYYY-MM-DD'),
+			(v) => (note.created_at = new Date(v).toISOString())}
+			onChange={() => saveNote}
+			type="date"
+		/>
+
+		<InputField
+			id="last_updated"
+			label="Last Updated"
+			type="date"
+			bind:value={() => dayjs(note.last_updated).format('YYYY-MM-DD'),
+			(v) => (note.last_updated = new Date(v).toISOString())}
+			onChange={() => saveNote(note)}
+		/>
+
+		{#if note.transcriptions && note.transcriptions.length}
+			<div class="mb-2">
+				<p class="block text-xs font-medium text-gray-700">Associated Images</p>
+				<div class="grid grid-cols-2 gap-2">
+					{#each note.transcriptions as transcription, i}
+						<img src={`${transcription.image}`} alt={note.summary} />
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<button
+			class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+			onclick={() => (showDeleteModal = true)}
+			>Delete This Note
+		</button>
+	</div>
+</div>
+{#if showDeleteModal}
+	<DeleteNoteModal bind:id={note.id} />
+{/if}

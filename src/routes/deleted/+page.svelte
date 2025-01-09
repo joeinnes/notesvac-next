@@ -7,27 +7,30 @@
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import utc from 'dayjs/plugin/utc';
 	import { invalidateAll } from '$app/navigation';
-	import { db } from '$lib/db/db.svelte';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
+	const { db } = $derived(data);
 
 	dayjs.extend(utc);
 	dayjs.extend(relativeTime);
+
 	const undeleteNote = async (id: string) => {
-		await db.db
-			?.updateTable('note')
+		if (!db) return;
+		await db
+			.updateTable('note')
 			.set({
 				is_deleted: false
 			})
 			.where('id', '=', id)
 			.execute();
-
 		invalidateAll();
 	};
+
 	let noteToDelete = $state('');
 	let showDeleteModal = $derived(noteToDelete !== '');
 
 	const permaDelete = async (id: string) => {
-		await db.db?.deleteFrom('note').where('id', '=', id).execute();
+		if (!db) return;
+		await db.deleteFrom('note').where('id', '=', id).execute();
 		invalidateAll();
 	};
 </script>

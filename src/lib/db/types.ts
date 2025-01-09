@@ -26,8 +26,8 @@ export interface NoteTable {
 	id: string;
 	title: string | null;
 	content: string | null;
-	created_at: ColumnType<Date, string | undefined, never>;
-	last_updated: ColumnType<Date, string | undefined, never>;
+	created_at: ColumnType<string, string | undefined, string>;
+	last_updated: ColumnType<string, string | undefined, string>;
 	summary: string | null;
 	keywords: string | null;
 	is_deleted: boolean;

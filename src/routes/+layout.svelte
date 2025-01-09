@@ -5,7 +5,6 @@
 	import Sidebar from '$lib/components/sidebar.svelte';
 	let { children, data }: { data: LayoutData; children: Snippet } = $props();
 	const { db } = $derived(data);
-	// import { db } from '$lib/db/db.svelte';
 	import PersistenceWarning from '$lib/components/PersistenceWarning.svelte';
 	import Toasts from '$lib/components/Toaster/Toasts.svelte';
 	let warnOnNonPersistence = $state(false);

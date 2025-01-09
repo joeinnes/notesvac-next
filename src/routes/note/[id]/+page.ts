@@ -1,9 +1,24 @@
 import { goto } from '$app/navigation';
+import { demoContent } from '$lib/utils/note.svelte';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, parent }) => {
 	const { db } = await parent();
 	const { id } = params;
+	if (id === 'new') {
+		return {
+			note: {
+				id: '',
+				content: demoContent,
+				keywords: '',
+				summary: '',
+				is_deleted: false,
+				last_updated: new Date().toISOString(),
+				created_at: new Date().toISOString(),
+				transcriptions: []
+			}
+		};
+	}
 	const res =
 		db && id && id !== 'new'
 			? await db
@@ -31,36 +46,24 @@ export const load = (async ({ params, parent }) => {
 					.where('note.id', '=', id)
 					.execute()
 			: null;
-	if (!res || (!res.length && id !== 'new')) {
+	if (!res || !res.length) {
 		await goto('/note/new');
 		return;
 	} else {
-		const note =
-			res && res.length
-				? {
-						id,
-						content: res[0].content || undefined,
-						summary: res[0].summary,
-						keywords: res[0].keywords,
-						is_deleted: res[0].is_deleted,
-						created_at: new Date(res[0].created_at),
-						last_updated: new Date(res[0].last_updated),
-						transcriptions: res.map((row) => ({
-							image: row.image,
-							image_hash: row.image_hash
-						}))
-					}
-				: {
-						id: '',
-						content:
-							'# Welcome\nEdit this note. You can use **most** basic [Markdown](https://www.markdownguide.org/cheat-sheet/) syntax __if__ you like...',
-						keywords: '',
-						summary: '',
-						is_deleted: false,
-						last_updated: new Date(),
-						created_at: new Date()
-					};
-
+		const note = {
+			id,
+			content: res[0].content || undefined,
+			summary: res[0].summary,
+			keywords: res[0].keywords,
+			is_deleted: res[0].is_deleted,
+			created_at: res[0].created_at,
+			last_updated: res[0].last_updated,
+			transcriptions: res.reduce<{ image: string; image_hash: string }[]>((acc, curr) => {
+				if (curr.image && curr.image_hash)
+					acc.push({ image: curr.image, image_hash: curr.image_hash });
+				return acc;
+			}, [])
+		};
 		return { id: params.id, note };
 	}
 }) satisfies PageLoad;
