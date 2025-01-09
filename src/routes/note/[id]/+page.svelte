@@ -135,7 +135,8 @@
 				class="text-end"
 				onsubmit={async (e) => {
 					e.preventDefault(); // Don't close the dialog yet
-					const { id } = await saveNote(note); // In case note does not yet exist, create it
+					const n = await saveNote(note); // In case note does not yet exist, create it
+					console.log(n);
 					uploadingHandwriting = true;
 					if (!user) return;
 					const apiKey =
@@ -160,6 +161,8 @@
 							);
 							return;
 						}
+						console.log('no no');
+						return;
 						const res = await getText(user.handwriting_api_choice || 'GCP', apiKey, b64);
 						note.content =
 							(note.content && note.content !== demoContent ? note.content + '\n\n' : '') +

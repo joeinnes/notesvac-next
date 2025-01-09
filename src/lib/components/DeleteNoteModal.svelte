@@ -12,6 +12,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 
 	const { db } = $derived($page.data);
+	let dialog: HTMLDialogElement | undefined = $state();
 
 	const deleteNote = async (id: string) => {
 		try {
@@ -33,9 +34,16 @@
 		}
 		invalidateAll();
 	};
+	$effect(() => {
+		if (id) {
+			dialog?.showModal();
+		} else {
+			dialog?.close();
+		}
+	});
 </script>
 
-<div class="absolute">
+<dialog bind:this={dialog}>
 	<div class="h-full">
 		<div class="fixed inset-0 z-10 bg-secondary-700/50"></div>
 		<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
@@ -85,7 +93,7 @@
 			</div>
 		</div>
 	</div>
-</div>
+</dialog>
 
 <style lang="postcss">
 	::backdrop {

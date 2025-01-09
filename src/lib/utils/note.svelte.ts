@@ -32,6 +32,7 @@ export const saveNote = async (
 	}
 
 	try {
+		console.log(noteToInsert);
 		const newNote = await db
 			.insertInto('note')
 			.values({ ...noteToInsert })
