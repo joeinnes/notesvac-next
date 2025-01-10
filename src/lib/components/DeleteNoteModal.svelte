@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	let { id = $bindable() } = $props();
-	import dayjs from 'dayjs';
-	import relativeTime from 'dayjs/plugin/relativeTime';
-	import utc from 'dayjs/plugin/utc';
-	dayjs.extend(utc);
-	dayjs.extend(relativeTime);
 
 	import { Toasts } from './Toaster/toaster.svelte';
 

@@ -161,8 +161,7 @@
 							);
 							return;
 						}
-						console.log('no no');
-						return;
+
 						const res = await getText(user.handwriting_api_choice || 'GCP', apiKey, b64);
 						note.content =
 							(note.content && note.content !== demoContent ? note.content + '\n\n' : '') +

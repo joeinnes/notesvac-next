@@ -1,27 +1,24 @@
 <script lang="ts">
 	import DeleteNoteModal from './DeleteNoteModal.svelte';
-
 	import debounce from 'lodash.debounce';
 	import { page } from '$app/stores';
-
-	import dayjs from 'dayjs';
-	import relativeTime from 'dayjs/plugin/relativeTime';
-	import utc from 'dayjs/plugin/utc';
-	dayjs.extend(utc);
-	dayjs.extend(relativeTime);
-
+	import dayjs from '$lib/utils/dayjs';
 	import { Toasts } from './Toaster/toaster.svelte';
-
 	import Icon from '$lib/icon/Icon.svelte';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 	import Search from 'lucide-svelte/icons/search';
 	import { goto, invalidateAll } from '$app/navigation';
+
+	const { notes, user, db, q } = $derived($page.data);
+
 	let query = $state('');
+	$effect(() => {
+		query = q;
+	});
 
 	let noteToDelete = $state('');
 	let showDeleteModal = $derived(noteToDelete !== '');
-	const { notes, user, db } = $derived($page.data);
 
 	const debouncedSearch = debounce(
 		(e: KeyboardEvent) => {

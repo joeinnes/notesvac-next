@@ -3,15 +3,10 @@
 	const { data }: { data: PageData } = $props();
 	const { deletedNotes } = $derived(data);
 	import Undo2 from 'lucide-svelte/icons/undo-2';
-	import dayjs from 'dayjs';
-	import relativeTime from 'dayjs/plugin/relativeTime';
-	import utc from 'dayjs/plugin/utc';
+	import dayjs from '$lib/utils/dayjs';
 	import { invalidateAll } from '$app/navigation';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 	const { db } = $derived(data);
-
-	dayjs.extend(utc);
-	dayjs.extend(relativeTime);
 
 	const undeleteNote = async (id: string) => {
 		if (!db) return;

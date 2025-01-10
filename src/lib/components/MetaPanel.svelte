@@ -1,5 +1,5 @@
 <script lang="ts">
-	import dayjs from 'dayjs';
+	import dayjs from '$lib/utils/dayjs';
 	import InputField from '$lib/components/InputField.svelte';
 	import DeleteNoteModal from '$lib/components/DeleteNoteModal.svelte';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';

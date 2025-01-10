@@ -7,9 +7,8 @@ export const ssr = false;
 export const load: LayoutLoad = async ({ url }) => {
 	if (!browser) return;
 	try {
-    console.log('getting db');
 		const { db: thisDb } = await import('$lib/db');
-    
+
 		const db = await thisDb();
 		let notesFromDb;
 		const q = url.searchParams.get('q');
@@ -67,7 +66,8 @@ export const load: LayoutLoad = async ({ url }) => {
 		return {
 			db,
 			user,
-			notes
+			notes,
+			q
 		};
 	} catch (e) {
 		console.error(e);
