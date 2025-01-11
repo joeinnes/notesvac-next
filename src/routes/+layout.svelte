@@ -36,7 +36,7 @@
 			>
 				<Sidebar />
 			</div>
-			<main class="h-full flex-1 overflow-y-auto">
+			<main class="h-full flex-1 overflow-y-auto" style="scrollbar-gutter: stable">
 				<svelte:boundary>
 					{@render children()}
 

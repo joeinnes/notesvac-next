@@ -1,11 +1,11 @@
-<div class="prose-secondary prose max-w-none p-4">
-	<h1 class="not-prose text-4xl font-semibold">
-		<img src="/favicon.svg" alt="Logo" class="inline-block w-16" /> NotesVac
+<div class="prose-secondary prose mx-auto p-4">
+	<h1 class="my-0 mb-4 py-0 text-4xl">
+		<img src="/favicon.svg" alt="Logo" class="my-0 inline-block w-16 py-0" /> NotesVac
 	</h1>
-	<p>
-		NotesVac is a tool to transcribe and store your handwritten notes in an easily searchable
-		personal knowledge base. NotesVac is local first - all of your notes are saved in a private
-		SQLite database on your computer<sup>*</sup>.
+
+	<p class="text-xl font-semibold">
+		NotesVac is a local-first tool to transcribe and store your handwritten notes in an easily
+		searchable personal knowledge base on your computer<sup>*</sup>.
 	</p>
 	<h2 id="purpose">Purpose</h2>
 	<p>
@@ -20,43 +20,23 @@
 		for efficient searching and retrieval. The application provides a user-friendly interface to
 		manage and categorize your notes, making it easy to find and reference them later.
 	</p>
-	<h2 id="how-it-achieves-it">How It Achieves It</h2>
-	<ul>
-		<li>
-			<strong>OCR Technology</strong>: Utilises state-of-the-art OCR algorithms to accurately
-			transcribe handwritten notes into digital text.
-		</li>
-		<li>
-			<strong>Local Storage</strong>: Stores all notes in a local SQLite database, ensuring privacy
-			and quick access without the need for an internet connection.
-		</li>
-		<li>
-			<strong>User Interface</strong>: Features an intuitive and responsive user interface built
-			with Svelte, allowing users to easily manage and search their notes.
-		</li>
-		<li>
-			<strong>Search Functionality</strong>: Implements powerful search capabilities to quickly find
-			notes based on keywords.
-		</li>
-	</ul>
+
 	<h2 id="key-features">Key Features</h2>
 	<ul>
-		<li><strong>Advanced OCR</strong>: High accuracy in transcribing handwritten notes.</li>
 		<li>
-			<strong>Local-First Approach</strong>: Ensures data privacy and offline access by storing
-			notes locally.<sup>*</sup>
-		</li>
-		<li><strong>Efficient Search</strong>: Quickly find notes with robust search functionality.</li>
-		<li>
-			<strong>User-Friendly Interface</strong>: Built with Svelte for a smooth and responsive user
-			experience.
+			<strong>World-leading handwriting transcription</strong> using OpenAI's gpt-4o multimodal AI
+			to produce outstanding results, or a more cost-effective solution through the Google Cloud
+			Vision API.<sup>*</sup>
 		</li>
 		<li>
-			<strong>Categorization and Tagging</strong>: Organize notes with categories and tags for easy
-			retrieval.
+			<strong>Notes are saved locally in your browser.</strong> You control and own your data. You can
+			download your database for maximum redundancy, or export your notes to markdown files for maximum
+			compatibility with other tools.
 		</li>
 		<li>
-			<strong>Secure Storage</strong>: Uses SQLite for secure and efficient local storage of notes.
+			<strong>Top-class search</strong>. optimized with advanced stemming, Unicode support, and
+			weighted relevance ranking, ensuring you find the right note effortlessly—even in large,
+			complex collections.
 		</li>
 	</ul>
 
@@ -74,9 +54,3 @@
 		features.</small
 	>
 </div>
-1. World-leading handwriting transcription using OpenAI's gpt-4o multimodal AI to produce outstanding
-results, or a more cost-effective solution through the Google Cloud Vision API. 2. Notes are saved locally
-in your browser. You control and own your data. You can download your database for maximum redundancy,
-or export your notes to markdown files for maximum compatibility with other tools. 3. Top-class search
-using SQLite's FTS5, optimized with advanced stemming, Unicode support, and weighted relevance ranking,
-ensuring you find the right note effortlessly—even in large, complex collections.

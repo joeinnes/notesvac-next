@@ -4,6 +4,7 @@
 
 body {
 	overflow: hidden;
+  scrollbar-gutter: stable;
 }
 .markdown-body {
 	@apply prose prose-base prose-stone;

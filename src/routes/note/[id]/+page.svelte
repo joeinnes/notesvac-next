@@ -61,8 +61,8 @@
 
 <div class="overflow-hidden">
 	<form class="h-full w-full p-4">
-		<div class="flex h-full flex-col">
-			<div class="mx-auto mb-4 w-full rounded-lg bg-white shadow">
+		<div class="mx-auto flex h-full w-full max-w-prose flex-col">
+			<div class="my-4 w-full rounded-lg bg-white shadow">
 				<InkMde
 					bind:value={note.content}
 					options={{
@@ -136,7 +136,6 @@
 				onsubmit={async (e) => {
 					e.preventDefault(); // Don't close the dialog yet
 					const n = await saveNote(note); // In case note does not yet exist, create it
-					console.log(n);
 					uploadingHandwriting = true;
 					if (!user) return;
 					const apiKey =
@@ -185,7 +184,7 @@
 							return await trx
 								.insertInto('note_transcription')
 								.values({
-									note_id: id,
+									note_id: note.id,
 									transcription_id: transcription.id
 								})
 								.returningAll()

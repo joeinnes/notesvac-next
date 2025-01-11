@@ -4,13 +4,16 @@
 	import { page } from '$app/stores';
 	import dayjs from '$lib/utils/dayjs';
 	import { Toasts } from './Toaster/toaster.svelte';
+	import House from 'lucide-svelte/icons/house';
 	import Icon from '$lib/icon/Icon.svelte';
+	import NotebookText from 'lucide-svelte/icons/notebook-text';
+	import Search from 'lucide-svelte/icons/search';
 	import Settings from 'lucide-svelte/icons/settings';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
-	import Search from 'lucide-svelte/icons/search';
+
 	import { goto, invalidateAll } from '$app/navigation';
 
-	const { notes, user, db, q } = $derived($page.data);
+	const { notes, user, db, q, id } = $derived($page.data);
 
 	let query = $state('');
 	$effect(() => {
@@ -57,14 +60,19 @@
 		class="flex h-full min-w-[50px] flex-col items-center gap-4 border-e border-secondary-100 p-1"
 	>
 		<a href="/" class="w-full"><Icon /></a>
+		<a href="/" class="rounded p-1 transition-colors hover:bg-secondary-200"><House /></a>
+		<a href="/transcriptions" class="rounded p-1 transition-colors hover:bg-secondary-200"
+			><NotebookText /></a
+		>
 		<a href="/deleted" class="rounded p-1 transition-colors hover:bg-secondary-200"><Trash_2 /></a>
+
 		<a href="/settings" class="mt-auto rounded p-1 transition-colors hover:bg-secondary-200"
 			><Settings /></a
 		>
 	</div>
 	<div class="flex h-full flex-col overflow-hidden border-e border-secondary-100 bg-secondary-50">
-		<div class="flex-1 px-4 py-6 pt-2">
-			<div class="flex w-full items-center justify-between py-2">
+		<div class="flex-1 px-2 py-6 pt-2">
+			<div class="flex w-full items-center justify-between px-4 py-2">
 				<div class="text-foreground text-base font-medium">NotesVac</div>
 			</div>
 			<form method="GET" action="" data-sveltekit-keepfocus>
@@ -99,11 +107,12 @@
 					{#each noteList as note (note.id)}
 						{@const createdAt = dayjs.utc(note.created_at)}
 						<li
-							class="border-t-0last:border-b-0 group flex w-full max-w-full items-center overflow-hidden border-b"
+							class="group flex w-full max-w-full items-center overflow-hidden rounded border-b border-t-0 last:border-b-0"
+							class:bg-primary-200={id === note.id}
 						>
 							<a
 								href="/note/{note.id}{query && '?q=' + query}"
-								class=" hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap py-4 text-sm leading-tight"
+								class=" hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full max-w-full flex-col items-start justify-center gap-2 whitespace-nowrap px-2 py-4 text-sm leading-tight"
 							>
 								<div class="flex w-full justify-between">
 									<span class="block w-full truncate"

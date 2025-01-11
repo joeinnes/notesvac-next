@@ -7,24 +7,25 @@
 	import { goto, invalidateAll } from '$app/navigation';
 
 	const { db } = $derived($page.data);
+	let dialog: HTMLDialogElement | undefined = $state();
 
-	const deleteNote = async (id: string) => {
+	const deleteTranscription = async (id: string) => {
 		try {
 			const currentPage = $page.data?.id;
 			if (currentPage === id) {
 				await goto('/');
 			}
 			await db
-				.updateTable('note')
+				.updateTable('transcription')
 				.set({
 					is_deleted: true
 				})
 				.where('id', '=', id)
 				.execute();
-			Toasts.addToast('error', 'Note deleted.');
+			Toasts.addToast('error', 'Transcription deleted.');
 		} catch (e) {
 			console.error(e);
-			Toasts.addToast('error', 'Something went wrong and your note could not be deleted.');
+			Toasts.addToast('error', 'Something went wrong and your transcription could not be deleted.');
 		}
 		invalidateAll();
 	};
@@ -56,8 +57,8 @@
 						</button>
 						<h3 class="text-lg font-medium text-secondary-900">Delete Note</h3>
 						<div class="mt-2 text-sm text-secondary-500">
-							Are you sure you want to delete this note? You'll be able to find it later in your
-							Deleted Notes.
+							Are you sure you want to delete this transcription? You'll be able to find it later in
+							your Deleted Transcriptions.
 						</div>
 					</div>
 					<div class="flex justify-end gap-3 bg-secondary-50 px-6 py-3">
@@ -73,7 +74,7 @@
 							type="button"
 							class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
 							onclick={() => {
-								if (id) deleteNote(id);
+								if (id) deleteTranscription(id);
 								id = '';
 							}}>Confirm</button
 						>

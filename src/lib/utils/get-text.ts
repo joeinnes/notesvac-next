@@ -93,7 +93,6 @@ Follow these instructions exactly. Failure to do so will result in an invalid re
 				],
 				response_format: zodResponseFormat(TranscribedNote, 'transcribed_note')
 			});
-			console.log(response);
 			if (!response.choices[0].message?.parsed)
 				throw new Error('The response from the API was poorly structured.');
 			return response.choices[0].message.parsed;

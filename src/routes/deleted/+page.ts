@@ -37,9 +37,19 @@ export const load: PageLoad = async ({ url, parent }) => {
 				.execute();
 		}
 
-		const deletedNotes = await notesFromDb;
+		const deletedTranscriptions = db
+			.selectFrom('transcription')
+			.selectAll()
+			.where('is_deleted', '=', true)
+			.orderBy('created_at', 'desc')
+			.limit(20)
+			.offset(offset || 0)
+			.execute();
+
+		const deletedNotes = notesFromDb;
 		return {
-			deletedNotes
+			deletedNotes,
+			deletedTranscriptions
 		};
 	} catch (e) {
 		console.error(`Something odd happened`, e);
