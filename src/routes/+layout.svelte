@@ -9,10 +9,6 @@
 	import Toasts from '$lib/components/Toaster/Toasts.svelte';
 	let warnOnNonPersistence = $state(false);
 	$effect(() => {
-		/*import('$lib/db').then(async ({ db: database }) => {
-			const thisDb = await database();
-			db.db = thisDb;
-		});*/
 		navigator.storage.persist().then((granted) => {
 			warnOnNonPersistence = !granted;
 			if (!granted) {

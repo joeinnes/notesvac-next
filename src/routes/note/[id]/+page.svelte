@@ -3,7 +3,7 @@
 	import type { PageData } from './$types';
 	import { resizeImage } from '$lib/utils/resize-image';
 	import { hashString } from '$lib/utils/hash';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate, invalidateAll } from '$app/navigation';
 	import { getText } from '$lib/utils/get-text';
 	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
 	import { demoContent, saveNote, debouncedSave } from '$lib/utils/note.svelte';
@@ -28,7 +28,7 @@
 	});
 
 	beforeNavigate(() => {
-		saveNote(note);
+		if (note.id) saveNote(note);
 	});
 
 	const canUploadHandwriting = () =>
