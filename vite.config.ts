@@ -16,7 +16,7 @@ export default defineConfig({
 		}
 	],
 	optimizeDeps: {
-		exclude: ['sqlocal']
+		exclude: ['dayjs', 'sqlocal']
 	},
 	build: {
 		rollupOptions: {
