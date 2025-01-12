@@ -16,11 +16,11 @@ export default defineConfig({
 		}
 	],
 	optimizeDeps: {
-		exclude: ['dayjs', 'sqlocal']
+		exclude: ['sqlocal']
 	},
 	build: {
 		rollupOptions: {
-			external: ['sharp', 'dayjs']
+			external: ['sharp']
 		}
 	}
 });
