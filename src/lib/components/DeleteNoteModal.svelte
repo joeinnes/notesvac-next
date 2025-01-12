@@ -31,7 +31,7 @@
 </script>
 
 {#if id}
-	<dialog open>
+	<dialog open class="relative">
 		<div class="h-full">
 			<div class="fixed inset-0 z-10 bg-secondary-700/50"></div>
 			<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">

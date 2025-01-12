@@ -59,157 +59,154 @@
 	});
 </script>
 
-<div class="overflow-hidden">
-	<form class="h-full w-full p-4">
-		<div class="mx-auto flex h-full w-full max-w-prose flex-col">
-			<div class="my-4 w-full rounded-lg bg-white shadow">
-				<InkMde
-					bind:value={note.content}
-					options={{
-						readability: true,
-						hooks: {
-							beforeUpdate: () => debouncedSave(note)
-						}
-					}}
-				/>
-			</div>
-
-			<div class="flex justify-end gap-2">
-				<button
-					type="button"
-					class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
-					onclick={() => {
-						if (canUploadHandwriting()) dialog?.showModal();
-					}}
-					disabled={!canUploadHandwriting()}
-					title={canUploadHandwriting()
-						? 'You need to set up an API key in your settings to use this feature.'
-						: ''}
-				>
-					Upload Handwriting
-				</button>
-
-				<button
-					type="button"
-					class="rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
-					onclick={async () => {
-						try {
-							await saveNote(note);
-							Toasts.addToast('success', 'Saved successfully!');
-						} catch (e) {
-							Toasts.addToast('error', 'Something went wrong and your note was not saved.');
-						}
-					}}
-				>
-					Save This Note
-				</button>
-			</div>
-
-			<MetaPanel bind:note {saveNote} />
+<form class="max-h-full w-full overflow-y-auto p-4">
+	<div class="mx-auto flex h-full w-full max-w-prose flex-col">
+		<div class="w-full rounded-lg bg-white shadow md:my-4">
+			<InkMde
+				bind:value={note.content}
+				options={{
+					readability: true,
+					hooks: {
+						beforeUpdate: () => debouncedSave(note)
+					}
+				}}
+			/>
 		</div>
-	</form>
 
-	<dialog bind:this={dialog} class="mx-auto rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
-		{#if uploadingHandwriting}
-			<div class="absolute z-10 h-full w-full animate-pulse bg-gray-500/50"></div>
-		{/if}
-		<div class="relative p-6">
-			<h3 class="text-lg font-medium text-secondary-900">
-				Upload a photo for handwriting recognition
-			</h3>
-			<div class="mt-2 text-sm text-secondary-500">
-				This will use your API key and will consume credits for the image processing. You will get
-				better results with a portrait image.
-			</div>
-			<label>
-				<div class="bg-primary rounded-xl p-2">
-					<div
-						class="border-primary-foreground bg-primary aspect-[3/4] w-[3/4] rounded-xl border-4 border-dashed sm:w-full sm:max-w-xl"
-						style="background-image: url({imagePreview}); background-size: contain; background-position: center; background-repeat: no-repeat;"
-					></div>
-				</div>
-				<input type="file" bind:files class="hidden" name="image" />
-			</label>
-			<form
-				method="dialog"
-				class="text-end"
-				onsubmit={async (e) => {
-					e.preventDefault(); // Don't close the dialog yet
-					const n = await saveNote(note); // In case note does not yet exist, create it
-					uploadingHandwriting = true;
-					if (!user) return;
-					const apiKey =
-						user.handwriting_api_choice === 'GCP' ? user.gcp_api_key : user.openai_api_key;
-					if (!apiKey) return;
+		<div class="flex justify-end gap-2">
+			<button
+				type="button"
+				class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+				onclick={() => {
+					if (canUploadHandwriting()) dialog?.showModal();
+				}}
+				disabled={!canUploadHandwriting()}
+				title={canUploadHandwriting()
+					? 'You need to set up an API key in your settings to use this feature.'
+					: ''}
+			>
+				Upload Handwriting
+			</button>
+
+			<button
+				type="button"
+				class="rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+				onclick={async () => {
 					try {
-						const b64 = imagePreview.split('data:image/jpeg;base64,')[1];
-						const hash = await hashString(b64);
-						const transcription = await db
-							?.selectFrom('transcription')
-							.selectAll()
-							.where('image_hash', '=', hash)
-							.executeTakeFirst();
-						if (transcription) {
-							note.content = transcription.content;
-							note.keywords = transcription.keywords;
-							note.summary = transcription.summary;
-							dialog?.close();
-							Toasts.addToast(
-								'success',
-								'A match was found for this transcription. No credits were used.'
-							);
-							return;
-						}
-
-						const res = await getText(user.handwriting_api_choice || 'GCP', apiKey, b64);
-						note.content =
-							(note.content && note.content !== demoContent ? note.content + '\n\n' : '') +
-								res?.text || '';
-						note.keywords = res?.keywords || '';
-						note.summary = res?.summary || '';
-						const saveTranscription = await db?.transaction().execute(async (trx) => {
-							const transcription = await trx
-								.insertInto('transcription')
-								.values({
-									content: res?.text,
-									keywords: res?.keywords || '',
-									summary: res?.summary || '',
-									id: crypto.randomUUID(),
-									image_hash: hash,
-									image: imagePreview,
-									is_deleted: false
-								})
-								.returning('id')
-								.executeTakeFirstOrThrow();
-							return await trx
-								.insertInto('note_transcription')
-								.values({
-									note_id: note.id,
-									transcription_id: transcription.id
-								})
-								.returningAll()
-								.executeTakeFirst();
-						});
-						dialog?.close();
-						Toasts.addToast('success', 'Your handwriting was successfully transcribed.');
+						await saveNote(note);
+						Toasts.addToast('success', 'Saved successfully!');
 					} catch (e) {
-						console.error(e);
-						dialog?.close();
-						Toasts.addToast('error', 'There was an error transcribing your handwriting.');
-					} finally {
-						uploadingHandwriting = false;
+						Toasts.addToast('error', 'Something went wrong and your note was not saved.');
 					}
 				}}
 			>
-				<button
-					class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
-					disabled={uploadingHandwriting}
-					>{#if uploadingHandwriting}Uploading...{:else}OK{/if}</button
-				>
-			</form>
+				Save This Note
+			</button>
 		</div>
-	</dialog>
-</div>
+	</div>
+</form>
+<MetaPanel bind:note {saveNote} />
+
+<dialog bind:this={dialog} class="mx-auto rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
+	{#if uploadingHandwriting}
+		<div class="absolute z-10 h-full w-full animate-pulse bg-gray-500/50"></div>
+	{/if}
+	<div class="relative p-6">
+		<h3 class="text-lg font-medium text-secondary-900">
+			Upload a photo for handwriting recognition
+		</h3>
+		<div class="mt-2 text-sm text-secondary-500">
+			This will use your API key and will consume credits for the image processing. You will get
+			better results with a portrait image.
+		</div>
+		<label>
+			<div class="bg-primary rounded-xl p-2">
+				<div
+					class="border-primary-foreground bg-primary aspect-[3/4] w-[3/4] rounded-xl border-4 border-dashed sm:w-full sm:max-w-xl"
+					style="background-image: url({imagePreview}); background-size: contain; background-position: center; background-repeat: no-repeat;"
+				></div>
+			</div>
+			<input type="file" bind:files class="hidden" name="image" />
+		</label>
+		<form
+			method="dialog"
+			class="text-end"
+			onsubmit={async (e) => {
+				e.preventDefault(); // Don't close the dialog yet
+				const n = await saveNote(note); // In case note does not yet exist, create it
+				uploadingHandwriting = true;
+				if (!user) return;
+				const apiKey =
+					user.handwriting_api_choice === 'GCP' ? user.gcp_api_key : user.openai_api_key;
+				if (!apiKey) return;
+				try {
+					const b64 = imagePreview.split('data:image/jpeg;base64,')[1];
+					const hash = await hashString(b64);
+					const transcription = await db
+						?.selectFrom('transcription')
+						.selectAll()
+						.where('image_hash', '=', hash)
+						.executeTakeFirst();
+					if (transcription) {
+						note.content = transcription.content;
+						note.keywords = transcription.keywords;
+						note.summary = transcription.summary;
+						dialog?.close();
+						Toasts.addToast(
+							'success',
+							'A match was found for this transcription. No credits were used.'
+						);
+						return;
+					}
+
+					const res = await getText(user.handwriting_api_choice || 'GCP', apiKey, b64);
+					note.content =
+						(note.content && note.content !== demoContent ? note.content + '\n\n' : '') +
+							res?.text || '';
+					note.keywords = res?.keywords || '';
+					note.summary = res?.summary || '';
+					const saveTranscription = await db?.transaction().execute(async (trx) => {
+						const transcription = await trx
+							.insertInto('transcription')
+							.values({
+								content: res?.text,
+								keywords: res?.keywords || '',
+								summary: res?.summary || '',
+								id: crypto.randomUUID(),
+								image_hash: hash,
+								image: imagePreview,
+								is_deleted: false
+							})
+							.returning('id')
+							.executeTakeFirstOrThrow();
+						return await trx
+							.insertInto('note_transcription')
+							.values({
+								note_id: note.id,
+								transcription_id: transcription.id
+							})
+							.returningAll()
+							.executeTakeFirst();
+					});
+					dialog?.close();
+					Toasts.addToast('success', 'Your handwriting was successfully transcribed.');
+				} catch (e) {
+					console.error(e);
+					dialog?.close();
+					Toasts.addToast('error', 'There was an error transcribing your handwriting.');
+				} finally {
+					uploadingHandwriting = false;
+				}
+			}}
+		>
+			<button
+				class="rounded-lg border border-primary-500 bg-primary-500 px-4 py-2 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+				disabled={uploadingHandwriting}
+				>{#if uploadingHandwriting}Uploading...{:else}OK{/if}</button
+			>
+		</form>
+	</div>
+</dialog>
 
 <style lang="postcss">
 	::backdrop {

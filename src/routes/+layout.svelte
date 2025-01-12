@@ -22,17 +22,14 @@
 
 <svelte:head><title>NotesVac</title></svelte:head>
 {#await db then db}
-	<div class="flex h-screen max-h-screen flex-col">
+	<div class="flex h-screen flex-col overflow-hidden">
 		{#if warnOnNonPersistence}
 			<PersistenceWarning {warnOnNonPersistence}></PersistenceWarning>
 		{/if}
-		<div class="flex h-full max-h-full flex-1 @container">
-			<div
-				class="@lg:sticky @lg:top-0 @lg:flex @lg:h-full @lg:w-[320px] @lg:min-w-[320px] @lg:flex-shrink-0 @lg:flex-grow-0 @lg:flex-col @lg:justify-between @lg:overflow-hidden"
-			>
-				<Sidebar />
-			</div>
-			<main class="h-full flex-1 overflow-y-auto" style="scrollbar-gutter: stable">
+		<div class="relative h-full flex-1 overflow-hidden @container md:flex">
+			<div class="hidden md:block"><Sidebar /></div>
+
+			<main class=" h-full flex-1 overflow-y-auto" style="scrollbar-gutter: stable">
 				<svelte:boundary>
 					{@render children()}
 
@@ -41,8 +38,8 @@
 							<h1>Something went wrong</h1>
 							<button
 								onclick={reset}
-								class="block rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
-								>Try again</button
+								class="not-prose block rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
+								>Try again?</button
 							>
 						</div>
 					{/snippet}
@@ -50,5 +47,6 @@
 				<Toasts />
 			</main>
 		</div>
+		<div class="border-t border-primary-100 bg-primary-50 py-2 md:hidden"><Sidebar /></div>
 	</div>
 {/await}

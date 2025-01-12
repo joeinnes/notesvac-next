@@ -46,6 +46,7 @@ export const getText = async (vendor: string, apiKey: string, image: string) => 
 			summary: ''
 		};
 	} else if (vendor === 'ChatGPT') {
+		// TODO: use the resized image.
 		const openai = new OpenAI({
 			apiKey,
 			dangerouslyAllowBrowser: true
