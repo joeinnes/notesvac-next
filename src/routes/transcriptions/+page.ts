@@ -72,6 +72,12 @@ export const load = (async ({ parent }) => {
 				}, []);
 
 				return { transcriptions };
+			})
+			.catch((err) => {
+				console.log(err);
+				return {
+					transcriptions: []
+				};
 			});
 	});
 }) satisfies PageLoad;
