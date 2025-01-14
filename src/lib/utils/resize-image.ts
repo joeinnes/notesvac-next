@@ -1,3 +1,5 @@
+import { string } from 'zod';
+
 export const resizeImage = async (
 	url: string,
 	options = {
@@ -24,7 +26,12 @@ export const resizeImage = async (
 		return [w, h];
 	};
 
-	return new Promise((resolve) => {
+	return new Promise<{
+		url: string;
+		contentType: string;
+		b64: string;
+		size: number;
+	}>((resolve) => {
 		const img = new Image();
 		img.src = url;
 		img.onerror = function () {

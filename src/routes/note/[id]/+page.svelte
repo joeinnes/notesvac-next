@@ -15,7 +15,7 @@
 	let uploadingHandwriting = $state(false);
 	let imagePreview: string = $state('');
 	let files: FileList | undefined = $state();
-	let resizedFile = $state();
+	let resizedFile: typeof Awaited<resizeImage> | undefined = $state();
 	let note: NonNullable<typeof dbNote> = $state({
 		id: '',
 		content: demoContent,
@@ -61,7 +61,7 @@
 
 <form class="max-h-full w-full overflow-y-auto p-4">
 	<div class="mx-auto flex h-full w-full max-w-prose flex-col">
-		<div class="w-full rounded-lg bg-white shadow md:my-4">
+		<div class="mb-4 w-full rounded-lg bg-white shadow md:my-4">
 			<InkMde
 				bind:value={note.content}
 				options={{
@@ -159,7 +159,11 @@
 						return;
 					}
 
-					const res = await getText(user.handwriting_api_choice || 'GCP', apiKey, b64);
+					const res = await getText(
+						user.handwriting_api_choice || 'GCP',
+						apiKey,
+						user.handwriting_api_choice === 'ChatGPT' && resizedFile?.b64 ? resizedFile?.b64 : b64
+					);
 					note.content =
 						(note.content && note.content !== demoContent ? note.content + '\n\n' : '') +
 							res?.text || '';

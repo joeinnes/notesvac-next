@@ -13,7 +13,7 @@
 </script>
 
 <div class="p-4">
-	<div class="prose mb-4">
+	<div class="mb-4 text-2xl font-semibold">
 		<h1>Transcriptions</h1>
 	</div>
 	{#await transcriptions then transcriptions}

@@ -49,8 +49,8 @@
 
 <div class="p-4">
 	{#if user}
-		<h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Settings</h1>
-		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">Profile</h2>
+		<h1 class="text-2xl font-semibold">Settings</h1>
+		<h2 class="mt-4 text-lg font-semibold">Profile</h2>
 
 		<div class="mb-2">
 			<label for="name" class="block text-xs font-medium text-gray-700">Name</label>
@@ -140,7 +140,7 @@
 			</label>
 		</div>
 
-		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">API Keys</h2>
+		<h2 class="mt-4 text-lg font-semibold">API Keys</h2>
 
 		<div class="mb-2">
 			<label for="OpenAIAPIKey" class="block text-xs font-medium text-gray-700">
@@ -198,7 +198,7 @@
 				}}
 			/>
 		</div>
-		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">API Options</h2>
+		<h2 class="mt-4 text-lg font-semibold">API Options</h2>
 		<small>Note: prices correct as of 03-Jan-2025.</small>
 		<fieldset class="space-y-4">
 			<legend class="sr-only">Cloud Platform for Handwriting Recognition</legend>
@@ -294,7 +294,7 @@
 			</div>
 		</fieldset>
 
-		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">Get My Data</h2>
+		<h2 class="mt-4 text-lg font-semibold">Get My Data</h2>
 
 		<div class="gap-2 md:flex">
 			<button
@@ -346,11 +346,11 @@
 			</button>
 		</div>
 
-		<h2 class="mt-4 text-xl font-bold text-gray-900 sm:text-2xl">Here Be Dragons 🐉</h2>
+		<h2 class="mt-4 text-lg font-semibold">Here Be Dragons 🐉</h2>
 
 		<div class="grid gap-4 md:grid-cols-2">
 			<div>
-				<h3 class="text-xl font-semibold">Restore database from a backup</h3>
+				<h3 class="font-medium">Restore database from a backup</h3>
 				<p>This will delete any existing notes in your current database.</p>
 				<label for="restore_db" class="mb-1 block text-sm font-medium text-gray-700"
 					>Upload file</label
@@ -386,7 +386,7 @@
 			</div>
 
 			<div>
-				<h3 class="text-xl font-semibold">Delete database</h3>
+				<h3 class="font-medium">Delete database</h3>
 				<p>This will delete all notes in your database.</p>
 				<button
 					type="button"

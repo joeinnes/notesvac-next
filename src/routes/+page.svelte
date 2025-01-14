@@ -1,5 +1,5 @@
-<div class="prose-secondary prose mx-auto p-4">
-	<h1 class="my-0 mb-4 py-0 text-4xl">
+<div class="prose mx-auto p-4">
+	<h1 class="my-0 mb-4 py-0 text-4xl font-semibold">
 		<img src="/favicon.svg" alt="Logo" class="my-0 inline-block w-16 py-0" /> NotesVac
 	</h1>
 

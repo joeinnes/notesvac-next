@@ -43,7 +43,7 @@
 </script>
 
 <div class="p-4">
-	<div class="prose mb-1">
+	<div class="mb-1 text-2xl font-semibold">
 		<h1>Deleted {tab}</h1>
 	</div>
 	<div>
