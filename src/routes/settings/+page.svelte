@@ -327,7 +327,9 @@
 					notes.forEach((note) => {
 						let { content, ...frontmatter } = note;
 						const thisNote = transformToMarkdownString({
-							frontmatter: Object.keys(frontmatter).map((el) => ({ [el]: frontmatter[el] })),
+							frontmatter: Object.entries(frontmatter).map(([key, value]) => ({
+								[key]: value
+							})),
 							body: content || ''
 						});
 						zip.file(note.created_at + ' ' + note.id + '.md', thisNote);

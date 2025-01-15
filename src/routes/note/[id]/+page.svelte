@@ -15,7 +15,7 @@
 	let uploadingHandwriting = $state(false);
 	let imagePreview: string = $state('');
 	let files: FileList | undefined = $state();
-	let resizedFile: typeof Awaited<resizeImage> | undefined = $state();
+	let resizedFile: Awaited<ReturnType<typeof resizeImage>> | undefined = $state();
 	let note: NonNullable<typeof dbNote> = $state({
 		id: '',
 		content: demoContent,

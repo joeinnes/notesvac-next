@@ -2,13 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  height: 100%;
-  margin: 0;
+html,
+body {
+	height: 100%;
+	margin: 0;
 }
 body {
 	overflow: hidden;
-  scrollbar-gutter: stable;
+	scrollbar-gutter: stable;
 }
 .markdown-body {
 	@apply prose prose-base prose-stone;
