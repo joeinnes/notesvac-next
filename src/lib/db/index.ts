@@ -4,6 +4,7 @@ import type { Database } from './types';
 import { Migrator } from 'kysely';
 import { Migration202412282231 } from './migrations/202412282231';
 import { Migration202501071409 } from './migrations/202501071409';
+import { Migration202501142030 } from './migrations/202501142030';
 
 const { dialect, deleteDatabaseFile, getDatabaseFile, overwriteDatabaseFile } = new SQLocalKysely({
 	databasePath: 'notesvac.sqlite3'
@@ -19,7 +20,8 @@ class getAllMigrations {
 	async getMigrations() {
 		return {
 			Migration202412282231,
-			Migration202501071409
+			Migration202501071409,
+			Migration202501142030
 		};
 	}
 }

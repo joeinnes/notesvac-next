@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { deleteDb, getDb, overwriteDb } from '$lib/db';
-	import { db } from '$lib/db/db.svelte';
 	import { page } from '$app/stores';
 	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
 	import transformToMarkdownString from '$lib/utils/markdownify';
 	import JSZip from 'jszip';
 	import { saveAs } from 'file-saver';
-	let { user } = $derived($page.data);
+	import { defaultPrompt } from '$lib/utils/get-text';
+	let { user, db } = $derived($page.data);
 	let restoreDb: FileList | null | undefined = $state();
 	let avatar: File | null = $state(null);
 	let avatarPreview: string | null = $state('');
@@ -27,13 +27,12 @@
 			const reader = new FileReader();
 			reader.onload = () => {
 				avatarPreview = reader.result as string;
-				db.db
-					?.updateTable('user')
+				db.updateTable('user')
 					.set({ avatar: avatarPreview })
 					.where('id', '=', user.id)
 					.returningAll()
 					.executeTakeFirst()
-					.then((res) => {
+					.then((res: any) => {
 						if (res) {
 							invalidateAll();
 						}
@@ -44,6 +43,22 @@
 			avatar = null;
 			avatarPreview = null;
 		}
+	};
+	const handleInputChange = (
+		e: Event & { currentTarget: HTMLInputElement | HTMLTextAreaElement }
+	) => {
+		const val = e.currentTarget.value;
+		const key = e.currentTarget.name;
+		db.updateTable('user')
+			.set({ [key]: val })
+			.where('id', '=', user.id)
+			.returningAll()
+			.executeTakeFirst()
+			.then((res: any) => {
+				if (res) {
+					invalidateAll();
+				}
+			});
 	};
 </script>
 
@@ -62,20 +77,7 @@
 				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 				name="name"
 				value={$page.data.user.name}
-				onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
-					const name = e.currentTarget.value;
-					db.db
-						?.updateTable('user')
-						.set({ name })
-						.where('id', '=', user.id)
-						.returningAll()
-						.executeTakeFirst()
-						.then((res) => {
-							if (res) {
-								invalidateAll();
-							}
-						});
-				}}
+				onchange={handleInputChange}
 			/>
 		</div>
 
@@ -89,20 +91,7 @@
 				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 				name="username"
 				value={$page.data.user.username}
-				onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
-					const username = e.currentTarget.value;
-					db.db
-						?.updateTable('user')
-						.set({ username })
-						.where('id', '=', user.id)
-						.returningAll()
-						.executeTakeFirst()
-						.then((res) => {
-							if (res) {
-								invalidateAll();
-							}
-						});
-				}}
+				onchange={handleInputChange}
 			/>
 		</div>
 
@@ -152,25 +141,12 @@
 				id="OpenAIAPIKey"
 				placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
-				name="OpenAIAPIKey"
+				name="openai_api_key"
 				value={$page.data.user.openai_api_key}
-				onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
-					const openai_api_key = e.currentTarget.value;
-					db.db
-						?.updateTable('user')
-						.set({ openai_api_key })
-						.where('id', '=', user.id)
-						.returningAll()
-						.executeTakeFirst()
-						.then((res) => {
-							if (res) {
-								invalidateAll();
-							}
-						});
-				}}
+				onchange={handleInputChange}
 			/>
 		</div>
-		<div>
+		<div class="mb-2">
 			<label for="GCPAPIKey" class="block text-xs font-medium text-gray-700">
 				Google Cloud Platform API Key
 			</label>
@@ -181,25 +157,31 @@
 				placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 				value={$page.data.user.gcp_api_key}
 				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
-				name="GCPAPIKey"
-				onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
-					const gcp_api_key = e.currentTarget.value;
-					db.db
-						?.updateTable('user')
-						.set({ gcp_api_key })
-						.where('id', '=', user.id)
-						.returningAll()
-						.executeTakeFirst()
-						.then((res) => {
-							if (res) {
-								invalidateAll();
-							}
-						});
-				}}
+				name="gcp_api_key"
+				onchange={handleInputChange}
 			/>
 		</div>
+		<div>
+			<label for="custom_prompt" class="block text-xs font-medium text-gray-700">
+				Custom Prompt
+			</label>
+
+			<textarea
+				rows={5}
+				id="custom_prompt"
+				value={$page.data.user.custom_prompt || defaultPrompt}
+				class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+				name="custom_prompt"
+				onchange={handleInputChange}
+			></textarea>
+		</div>
 		<h2 class="mt-4 text-lg font-semibold">API Options</h2>
-		<small>Note: prices correct as of 03-Jan-2025.</small>
+		<small
+			>Note: prices correct as of 03-Jan-2025. Prices are indicative, all responsibility for usage
+			of your token remains with you. Although I do everything I can to keep your costs down, I'm
+			not liable for any costs incurred by you using these services, even if it's caused by a bug in
+			this app. Ensure you have appropriate measures in place to avoid getting a big bill.</small
+		>
 		<fieldset class="space-y-4">
 			<legend class="sr-only">Cloud Platform for Handwriting Recognition</legend>
 
@@ -222,26 +204,12 @@
 
 					<input
 						type="radio"
-						name="api_choices"
+						name="handwriting_api_choice"
 						value="GCP"
 						id="GCP"
 						class="size-5 border-gray-300 text-primary-500"
 						checked={user.handwriting_api_choice === 'GCP'}
-						onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
-							const handwriting_api_choice = e.currentTarget.value;
-							if (handwriting_api_choice !== 'GCP' && handwriting_api_choice !== 'ChatGPT') return;
-							db.db
-								?.updateTable('user')
-								.set({ handwriting_api_choice })
-								.where('id', '=', user.id)
-								.returningAll()
-								.executeTakeFirst()
-								.then((res) => {
-									if (res) {
-										invalidateAll();
-									}
-								});
-						}}
+						onchange={handleInputChange}
 					/>
 				</label>
 			</div>
@@ -261,32 +229,18 @@
 							you can expect your response to at least double that in output tokens (which are three
 							times as expensive at ${(7.5 * 300) / 1000000}). An average user uploading 3 pages per
 							day can expect to pay around ${3 * 30 * (0.003825 + 0.00225 + 0.00075)} per month depending
-							on handwriting density. Note that automated summaries, keyword generation, and 'chat with
-							my notes' is only available using ChatGPT.
+							on handwriting density. Note that automated summaries, keyword generation, and other AI
+							features are only available using ChatGPT.
 						</p>
 					</div>
 
 					<input
 						type="radio"
-						name="api_choices"
+						name="handwriting_api_choice"
 						value="ChatGPT"
 						id="ChatGPT"
 						class="size-5 border-gray-300 text-primary-500"
-						onchange={(e: Event & { currentTarget: HTMLInputElement }) => {
-							const handwriting_api_choice = e.currentTarget.value;
-							if (handwriting_api_choice !== 'GCP' && handwriting_api_choice !== 'ChatGPT') return;
-							db.db
-								?.updateTable('user')
-								.set({ handwriting_api_choice })
-								.where('id', '=', user.id)
-								.returningAll()
-								.executeTakeFirst()
-								.then((res) => {
-									if (res) {
-										invalidateAll();
-									}
-								});
-						}}
+						onchange={handleInputChange}
 						checked={user.handwriting_api_choice === 'ChatGPT'}
 						disabled={!user.openai_api_key}
 					/>
@@ -324,7 +278,7 @@
 						return;
 					}
 					const zip = new JSZip();
-					notes.forEach((note) => {
+					notes.forEach((note: { [x: string]: any; created_at?: any; id?: any; content?: any }) => {
 						let { content, ...frontmatter } = note;
 						const thisNote = transformToMarkdownString({
 							frontmatter: Object.entries(frontmatter).map(([key, value]) => ({
