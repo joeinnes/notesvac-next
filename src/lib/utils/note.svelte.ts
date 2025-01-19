@@ -39,7 +39,8 @@ export const saveNote = async (
 			.onConflict((oc) => oc.column('id').doUpdateSet({ ...noteToInsert }))
 			.returningAll()
 			.execute();
-		if (noteId === 'new' || !noteId)
+
+		if ((pageStore.route.id !== '/transcriptions' && noteId === 'new') || !noteId)
 			await goto(`/note/${noteToInsert.id}`, {
 				replaceState: true,
 				keepFocus: true,

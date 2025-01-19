@@ -22,14 +22,14 @@
 
 <svelte:head><title>NotesVac</title></svelte:head>
 {#await db then db}
-	<div class="flex h-screen flex-col overflow-hidden">
+	<div class="relative flex h-screen flex-col overflow-hidden">
 		{#if warnOnNonPersistence}
 			<PersistenceWarning {warnOnNonPersistence}></PersistenceWarning>
 		{/if}
 		<div class="relative h-full flex-1 overflow-hidden @container md:flex">
-			<div class="hidden md:block"><Sidebar /></div>
+			<div class="relative hidden md:block"><Sidebar /></div>
 
-			<main class=" h-full flex-1 overflow-y-auto" style="scrollbar-gutter: stable">
+			<main class="h-full flex-1 overflow-y-auto" style="scrollbar-gutter: stable">
 				<svelte:boundary>
 					{@render children()}
 

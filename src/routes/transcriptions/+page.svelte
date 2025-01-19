@@ -1,12 +1,16 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import DeleteTranscriptionModal from '$lib/components/DeleteTranscriptionModal.svelte';
 	import Lightbox from '$lib/components/Lightbox.svelte';
 	import dayjs from '$lib/utils/dayjs';
+	import { saveNote } from '$lib/utils/note.svelte';
 	import type { PageData } from './$types';
 	import ExternalLink from 'lucide-svelte/icons/external-link';
+	import NotebookPen from 'lucide-svelte/icons/notebook-pen';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 
 	let { data }: { data: PageData } = $props();
+	const { db } = $derived(data);
 	let { transcriptions } = $derived(data);
 	let showLightbox = $state('');
 	let showDelete = $state('');
@@ -57,11 +61,37 @@
 								{/each}
 							</div>
 						</div>
-						<button
-							onclick={() => (showDelete = transcription.id)}
-							class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
-							><Trash_2 class="w-4" />Delete
-						</button>
+						<div class="flex flex-col gap-1">
+							<button
+								onclick={async () => {
+									if (!db) return;
+									const newNote = await saveNote({
+										content: transcription.content,
+										summary: transcription.summary,
+										keywords: transcription.keywords
+									});
+
+									await db
+										.insertInto('note_transcription')
+										.values({
+											note_id: newNote[0].id,
+											transcription_id: transcription.id
+										})
+										.returningAll()
+										.executeTakeFirst();
+									await goto(`/note/${newNote[0].id}`, {
+										invalidateAll: true
+									});
+								}}
+								class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+								><NotebookPen class="w-4" />Convert To New Note
+							</button>
+							<button
+								onclick={() => (showDelete = transcription.id)}
+								class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+								><Trash_2 class="w-4" />Delete
+							</button>
+						</div>
 					</div>
 				{/each}
 			</div>

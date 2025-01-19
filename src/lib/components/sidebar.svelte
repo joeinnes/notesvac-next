@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Search from './Search.svelte';
 
-	import debounce from 'lodash.debounce';
 	import { page } from '$app/stores';
 
 	import FilePlus2 from 'lucide-svelte/icons/file-plus-2';
@@ -36,10 +35,10 @@
 	>
 </div>
 <div
-	class="@lg:sticky @lg:top-0 @lg:flex @lg:h-full @lg:w-[320px] @lg:min-w-[320px] @lg:flex-shrink-0 @lg:flex-grow-0 @lg:flex-col @lg:justify-between @lg:overflow-hidden"
+	class="!relative @lg:sticky @lg:top-0 @lg:flex @lg:h-full @lg:w-[320px] @lg:min-w-[320px] @lg:flex-shrink-0 @lg:flex-grow-0 @lg:flex-col @lg:justify-between @lg:overflow-hidden"
 >
 	<div
-		class="max-w-screen hidden h-full flex-col-reverse overflow-hidden bg-secondary-50 shadow-md md:flex md:flex-row"
+		class="max-w-screen relative hidden h-full flex-col-reverse overflow-hidden bg-secondary-50 shadow-md md:flex md:flex-row"
 	>
 		<div
 			class="flex min-w-[50px] items-center justify-center gap-8 border-e border-secondary-100 p-1 md:relative md:h-full md:flex-col"
@@ -64,7 +63,7 @@
 			>
 		</div>
 		<div
-			class="flex h-full flex-1 flex-col overflow-hidden border-e border-secondary-100 bg-secondary-50"
+			class="relative flex h-full flex-1 flex-col overflow-hidden border-e border-secondary-100 bg-secondary-50"
 		>
 			<div class="relative h-full w-full flex-1 overflow-y-auto px-2 py-6 pt-2">
 				<div class="text-foreground p-2 text-base font-medium">NotesVac</div>
