@@ -83,12 +83,12 @@
 										invalidateAll: true
 									});
 								}}
-								class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
+								class="flex items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-primary-500 bg-primary-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:border-primary-700 hover:bg-primary-700 focus:ring focus:ring-primary-200 disabled:cursor-not-allowed disabled:border-primary-300 disabled:bg-primary-300"
 								><NotebookPen class="w-4" />Convert To New Note
 							</button>
 							<button
 								onclick={() => (showDelete = transcription.id)}
-								class="flex items-center gap-1 whitespace-nowrap rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
+								class="flex items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-red-500 bg-red-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:border-red-700 hover:bg-red-700 focus:ring focus:ring-red-200 disabled:cursor-not-allowed disabled:border-red-300 disabled:bg-red-300"
 								><Trash_2 class="w-4" />Delete
 							</button>
 						</div>
