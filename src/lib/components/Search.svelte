@@ -7,10 +7,18 @@
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 
 	import DeleteNoteModal from './DeleteNoteModal.svelte';
+	import { _fetchMore, _LOAD_LIMIT } from '../../routes/+layout';
 
-	const { notes, db, q, id } = $derived($page.data);
+	const { notes: pageNotes, q, id } = $derived($page.data);
 
+	let offset = $state(0);
 	let query = $state('');
+	// svelte-ignore state_referenced_locally Because I only want to initialise the state this way
+	let notes = $state(pageNotes);
+	let loading = $state(false);
+	// svelte-ignore state_referenced_locally again, I only want to initialise the state
+	let total: number = $state(notes.length);
+	let moreToFetch = $derived(total < offset + _LOAD_LIMIT);
 	$effect(() => {
 		query = q;
 	});
@@ -28,6 +36,25 @@
 			maxWait: 2000 // If the user keeps typing for more than 2 seconds, don't debounce continuously, just return after 2 seconds
 		}
 	);
+
+	async function fetchMore() {
+		const newNotes = await _fetchMore(q, offset);
+		if (!newNotes) return;
+		total = newNotes.total;
+		notes = [
+			...notes,
+			...newNotes.notes.filter((el) => {
+				return notes.findIndex((el2) => el2.id === el.id) === -1; // Don't allow duplication.
+			})
+		];
+		loading = false;
+	}
+	$effect(() => {
+		if (offset > 0) {
+			loading = true;
+			fetchMore();
+		}
+	});
 </script>
 
 <form method="GET" action="" data-sveltekit-keepfocus>
@@ -114,6 +141,16 @@
 				<p class="w-full block rounded-lg py-2 text-sm font-medium text-gray-700">No results</p>
 			</li>
 		{/each}
+		<li
+			class="group relative flex w-full items-center overflow-hidden rounded border-b border-t-0 last:border-b-0"
+		>
+			<button
+				onclick={() => (offset += _LOAD_LIMIT)}
+				disabled={moreToFetch}
+				class="mx-auto mb-2 mt-4 block rounded-lg border border-secondary-500 bg-secondary-500 px-5 py-2.5 text-center text-sm font-medium text-white shadow-sm transition-all hover:border-secondary-700 hover:bg-secondary-700 focus:ring focus:ring-secondary-200 disabled:cursor-not-allowed disabled:border-secondary-300 disabled:bg-secondary-300"
+				>Load more</button
+			>
+		</li>
 	{/await}
 </ul>
 {#if showDeleteModal}

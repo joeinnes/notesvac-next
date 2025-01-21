@@ -12,11 +12,11 @@
 </script>
 
 <div
-	class="max-w-screen group absolute bottom-0 right-0 top-0 w-full transform border-s border-secondary-100 bg-secondary-200 p-4 shadow-sm transition-transform md:max-w-lg"
+	class="max-w-screen group absolute bottom-0 right-0 top-0 w-full transform border-s border-secondary-50 bg-secondary-100 p-4 shadow-sm transition-transform md:max-w-lg"
 	class:translate-x-full={!showMeta}
 >
 	<button
-		class="absolute left-0 -translate-x-full transform rounded-l-full bg-secondary-200 px-3 py-1 text-2xl"
+		class="absolute left-0 -translate-x-full transform rounded-l-full bg-secondary-100 px-3 py-1 text-2xl"
 		onclick={() => (showMeta = !showMeta)}
 	>
 		<span class="inline-block transform transition-transform" class:rotate-180={showMeta}
@@ -25,14 +25,14 @@
 	</button>
 	<div class="h-full overflow-y-auto">
 		<button
-			class="absolute right-2 inline-block bg-secondary-200 px-3 py-1 text-2xl md:hidden"
+			class="absolute right-2 inline-block bg-secondary-100 px-3 py-1 text-2xl md:hidden"
 			onclick={() => (showMeta = !showMeta)}
 		>
 			<span class="inline-block transform transition-transform" class:rotate-180={showMeta}
 				>&larr;</span
 			>
 		</button>
-		<h2 class="mb-2 mt-1 text-2xl font-semibold text-primary-900">Metadata</h2>
+		<h2 class="mb-2 mt-1 text-2xl font-semibold text-secondary-900">Metadata</h2>
 
 		<div class="w-full pb-4 text-secondary-500">
 			<InputField

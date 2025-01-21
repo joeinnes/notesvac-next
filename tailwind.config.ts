@@ -36,17 +36,30 @@ const config: Config = {
 				'950': '#132639'
 			},
 			secondary: {
-				'50': '#f4f7fb',
-				'100': '#dce6f0',
-				'200': '#cdddea',
-				'300': '#a1c1d8',
-				'400': '#6fa0c1',
-				'500': '#4d84aa',
-				'600': '#3a6a8f',
-				'700': '#305574',
-				'800': '#2b4961',
-				'900': '#283f52',
-				'950': '#1b2836'
+				'50': '#f7f8f5', // Light, neutral beige with a touch of warmth
+				'100': '#e1e3d9', // Soft, neutral sage greenish-beige, subtle and calming
+				'200': '#c3c9b5', // Light olive, soft and elegant without being overpowering
+				'300': '#a2b194', // Muted greenish-olive, brings in a calm, organic tone
+				'400': '#7f9f75', // More pronounced olive green, good for subtle accents
+				'500': '#6b8a5a', // A rich, mid-tone olive that balances warmth and neutrality
+				'600': '#4f6d44', // Deeper, earthy green that adds depth
+				'700': '#3c5733', // Darker olive, strong yet understated
+				'800': '#2a4123', // Deep olive for a more grounded, natural feel
+				'900': '#1a2b19', // Almost dark green, offering a stable, earthy contrast
+				'950': '#0d1c11' // Very deep, earthy green, nearly blackened for strong accents
+			},
+			accent: {
+				'50': '#fff4e5',
+				'100': '#ffe6bf',
+				'200': '#ffd392',
+				'300': '#ffb666',
+				'400': '#ff9440',
+				'500': '#ff7120', // Main accent
+				'600': '#db5718',
+				'700': '#b74214',
+				'800': '#933510',
+				'900': '#7a2b0d',
+				'950': '#4b1807'
 			}
 		}
 	},
