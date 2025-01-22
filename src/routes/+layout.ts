@@ -5,7 +5,7 @@ import type { LayoutLoad } from './$types';
 import { sql } from 'kysely';
 
 export const ssr = false;
-export const _LOAD_LIMIT = 5;
+export const _LOAD_LIMIT = 25;
 
 const sanitizeNumber = (value: string | null, defaultValue: number) => {
 	const num = parseInt(value || '', 10);

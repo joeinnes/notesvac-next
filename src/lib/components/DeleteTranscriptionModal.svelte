@@ -34,7 +34,7 @@
 {#if id}
 	<dialog open>
 		<div class="h-full">
-			<div class="fixed inset-0 z-10 bg-secondary-700/50"></div>
+			<div class="fixed inset-0 z-10 bg-gray-700/50"></div>
 			<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
 				<div class="mx-auto overflow-hidden rounded-lg bg-white shadow-xl sm:w-full sm:max-w-xl">
 					<div class="relative p-6">
@@ -42,7 +42,7 @@
 							type="button"
 							aria-label="Close"
 							onclick={() => (id = '')}
-							class="absolute right-4 top-4 rounded-lg p-1 text-center font-medium text-secondary-500 transition-all hover:bg-secondary-100"
+							class="absolute right-4 top-4 rounded-lg p-1 text-center font-medium text-gray-500 transition-all hover:bg-gray-100"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -55,13 +55,13 @@
 								/>
 							</svg>
 						</button>
-						<h3 class="text-lg font-medium text-secondary-900">Delete Note</h3>
-						<div class="mt-2 text-sm text-secondary-500">
+						<h3 class="text-lg font-medium text-gray-900">Delete Note</h3>
+						<div class="mt-2 text-sm text-gray-500">
 							Are you sure you want to delete this transcription? You'll be able to find it later in
 							your Deleted Transcriptions.
 						</div>
 					</div>
-					<div class="flex justify-end gap-3 bg-secondary-50 px-6 py-3">
+					<div class="flex justify-end gap-3 bg-gray-50 px-6 py-3">
 						<button
 							type="button"
 							onclick={() => {
@@ -87,6 +87,6 @@
 
 <style lang="postcss">
 	::backdrop {
-		@apply bg-secondary-700/50;
+		@apply bg-gray-700/50;
 	}
 </style>
