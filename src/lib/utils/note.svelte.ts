@@ -25,7 +25,7 @@ export const saveNote = async (
 	const noteToInsert: NoteUpdate = {
 		...snapshot,
 		created_at: snapshot.created_at || new Date().toISOString(),
-		last_updated: snapshot.last_updated || new Date().toISOString()
+		last_updated: new Date().toISOString() // Always update the 'last_updated'
 	};
 	if (!noteToInsert.id || noteToInsert.id === '') {
 		noteToInsert.id = crypto.randomUUID();
