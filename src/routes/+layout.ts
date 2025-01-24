@@ -60,7 +60,8 @@ const fetchNotes = async (db: Kysely<Database>, q: string, offset: number) => {
 	};
 };
 
-export const load: LayoutLoad = async ({ url }) => {
+export const load: LayoutLoad = async ({ url, depends }) => {
+	depends('notes:get');
 	if (!browser) return;
 
 	try {

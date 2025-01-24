@@ -1,4 +1,3 @@
-import debounce from 'lodash.debounce';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { get } from 'svelte/store';
@@ -10,7 +9,8 @@ export const demoContent =
 export const saveNote = async (
 	note: (NewNote | NoteUpdate) & {
 		transcriptions?: { image: string | null; image_hash: string | null }[];
-	}
+	},
+	shouldGo = true
 ) => {
 	const pageStore = get(page);
 	const {
@@ -40,7 +40,7 @@ export const saveNote = async (
 			.returningAll()
 			.execute();
 
-		if ((pageStore.route.id !== '/transcriptions' && noteId === 'new') || !noteId)
+		if ((shouldGo && pageStore.route.id !== '/transcriptions' && noteId === 'new') || !noteId)
 			await goto(`/note/${noteToInsert.id}`, {
 				replaceState: true,
 				keepFocus: true,
@@ -49,9 +49,6 @@ export const saveNote = async (
 		return newNote;
 	} catch (e) {
 		console.error(e);
+		return null;
 	}
 };
-
-export const debouncedSave = debounce((note) => {
-	saveNote(note);
-}, 2000);

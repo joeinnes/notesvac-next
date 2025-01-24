@@ -12,7 +12,6 @@
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 
 	const { user, q } = $derived($page.data);
-
 	let query = $state('');
 	$effect(() => {
 		query = q;

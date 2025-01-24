@@ -55,6 +55,9 @@
 			fetchMore();
 		}
 	});
+	$effect(() => {
+		notes = pageNotes; // Oh this is uggllleeeee
+	});
 </script>
 
 <form method="GET" action="" data-sveltekit-keepfocus>

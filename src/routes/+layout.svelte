@@ -34,7 +34,7 @@
 					{@render children()}
 
 					{#snippet failed(error, reset)}
-						<div class="prose">
+						<div class="prose p-4">
 							<h1>Something went wrong</h1>
 							<button
 								onclick={reset}

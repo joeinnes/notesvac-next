@@ -4,7 +4,7 @@
 
 	import { Toasts } from './Toaster/toaster.svelte';
 
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, invalidate, invalidateAll } from '$app/navigation';
 
 	const { db } = $derived($page.data);
 
@@ -27,6 +27,7 @@
 			Toasts.addToast('error', 'Something went wrong and your note could not be deleted.');
 		}
 		invalidateAll();
+		invalidate('notes:get');
 	};
 </script>
 

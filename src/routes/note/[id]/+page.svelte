@@ -1,15 +1,17 @@
 <script lang="ts">
 	import InkMde from 'ink-mde/svelte';
 	import type { PageData } from './$types';
+	import debounce from 'lodash.debounce';
+
 	import { resizeImage } from '$lib/utils/resize-image';
 	import { hashString } from '$lib/utils/hash';
-	import { beforeNavigate, afterNavigate, invalidateAll } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { getText } from '$lib/utils/get-text';
 	import { Toasts } from '$lib/components/Toaster/toaster.svelte';
-	import { demoContent, saveNote, debouncedSave } from '$lib/utils/note.svelte';
+	import { demoContent, saveNote } from '$lib/utils/note.svelte';
 	import MetaPanel from '$lib/components/MetaPanel.svelte';
 	let { data }: { data: PageData } = $props();
-	const { db, user, note: dbNote } = $derived(data);
+	const { db, user, note: dbNote, id } = $derived(data);
 
 	let dialog: HTMLDialogElement | undefined = $state();
 	let uploadingHandwriting = $state(false);
@@ -26,9 +28,33 @@
 		created_at: new Date().toISOString(),
 		transcriptions: []
 	});
+	export const debouncedSave = debounce(
+		(note) => {
+			saveNote(note);
+			return note;
+		},
+		2000,
+		{ leading: true, trailing: true }
+	);
 
-	beforeNavigate(() => {
-		if (note.id) saveNote(note);
+	let lastCall: typeof debouncedSave | undefined = $state();
+
+	beforeNavigate((navigation) => {
+		console.log(navigation);
+		if (
+			navigation.to?.params?.id === 'new' &&
+			navigation.type !== 'goto' &&
+			note.content !== demoContent
+		) {
+			if (id === 'new') navigation.cancel();
+			debouncedSave?.cancel();
+			saveNote(note).then(() => {
+				window.location = '/note/new'; // Yes I don't like this, but this gives me a blank slate. Otherwise the note data doesn't reset. I can do this differently, but this is the easiest way for now. This is a relatively rare use case (clicking 'new note' when you have an open, but dirty, new note already), so not wasting time overoptimising.
+			});
+		}
+		if (note.id && lastCall && debouncedSave.flush) {
+			debouncedSave.flush();
+		}
 	});
 
 	const canUploadHandwriting = () =>
@@ -67,7 +93,9 @@
 				options={{
 					readability: true,
 					hooks: {
-						beforeUpdate: () => debouncedSave(note)
+						beforeUpdate: () => {
+							debouncedSave(note);
+						} // Trying to work out a way to stop navigating to a newly created note in case I manually navigated away from that note.
 					}
 				}}
 			/>
