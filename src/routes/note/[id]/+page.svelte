@@ -36,23 +36,21 @@
 		2000,
 		{ leading: true, trailing: true }
 	);
-
-	let lastCall: typeof debouncedSave | undefined = $state();
-
 	beforeNavigate((navigation) => {
-		console.log(navigation);
 		if (
 			navigation.to?.params?.id === 'new' &&
 			navigation.type !== 'goto' &&
 			note.content !== demoContent
 		) {
-			if (id === 'new') navigation.cancel();
-			debouncedSave?.cancel();
-			saveNote(note).then(() => {
-				window.location = '/note/new'; // Yes I don't like this, but this gives me a blank slate. Otherwise the note data doesn't reset. I can do this differently, but this is the easiest way for now. This is a relatively rare use case (clicking 'new note' when you have an open, but dirty, new note already), so not wasting time overoptimising.
-			});
+			if (id === 'new') {
+				navigation.cancel();
+				debouncedSave?.cancel();
+				saveNote(note).then(() => {
+					window.location = '/note/new'; // Yes I don't like this, but this gives me a blank slate. Otherwise the note data doesn't reset. I can do this differently, but this is the easiest way for now. This is a relatively rare use case (clicking 'new note' when you have an open, but dirty, new note already), so not wasting time overoptimising.
+				});
+			}
 		}
-		if (note.id && lastCall && debouncedSave.flush) {
+		if (note.id && debouncedSave.flush) {
 			debouncedSave.flush();
 		}
 	});
