@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	const { data }: { data: PageData } = $props();
-	const { deletedNotes, deletedTranscriptions } = $derived(data);
+	const { db, deletedNotes, deletedTranscriptions, pagination } = $derived(data);
 	import Undo2 from 'lucide-svelte/icons/undo-2';
 	import dayjs from '$lib/utils/dayjs';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
-	const { db } = $derived(data);
+
+	const ITEMS_PER_PAGE = 20;
 
 	const undeleteNote = async (id: string) => {
 		if (!db) return;
@@ -36,10 +37,35 @@
 
 	const permaDelete = async (id: string, type: 'note' | 'transcription') => {
 		if (!db) return;
-		await db.deleteFrom('note').where('id', '=', id).execute();
+		await db.deleteFrom(type).where('id', '=', id).execute();
 		invalidateAll();
 	};
 	let tab: 'notes' | 'transcriptions' = $state('notes');
+
+	let currentPage = $state(0);
+	const itemsPerPage = $derived(pagination?.itemsPerPage || 20);
+
+	const nextPage = () => {
+		currentPage++;
+		goto(`?tab=${tab}&from=${currentPage * itemsPerPage}`, { replaceState: true });
+	};
+
+	const prevPage = () => {
+		if (currentPage > 0) {
+			currentPage--;
+			goto(`?tab=${tab}&from=${currentPage * itemsPerPage}`, { replaceState: true });
+		}
+	};
+
+	$effect(() => {
+		const url = new URL(window.location.href);
+		const from = url.searchParams.get('from');
+		const tabParam = url.searchParams.get('tab');
+		if (tabParam === 'notes' || tabParam === 'transcriptions') {
+			tab = tabParam;
+		}
+		currentPage = Math.floor(parseInt(from || '0') / itemsPerPage);
+	});
 </script>
 
 <div class="p-4">
@@ -206,3 +232,31 @@
 		</div>
 	</div>
 {/if}
+<div class="mt-2 flex items-center justify-between px-4">
+	<button
+		onclick={prevPage}
+		disabled={currentPage === 0}
+		class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+	>
+		Previous
+	</button>
+
+	<span class="text-sm text-gray-600">
+		Page {currentPage + 1} of {Math.ceil(
+			(tab === 'notes' ? pagination?.notesCount || 0 : pagination?.transcriptionsCount || 0) /
+				(pagination?.itemsPerPage || ITEMS_PER_PAGE)
+		)}
+	</span>
+
+	<button
+		onclick={nextPage}
+		disabled={tab === 'notes'
+			? (currentPage + 1) * (pagination?.itemsPerPage || ITEMS_PER_PAGE) >=
+				(pagination?.notesCount || 0)
+			: (currentPage + 1) * (pagination?.itemsPerPage || ITEMS_PER_PAGE) >=
+				(pagination?.transcriptionsCount || 0)}
+		class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-100 focus:ring focus:ring-gray-100 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
+	>
+		Next
+	</button>
+</div>
