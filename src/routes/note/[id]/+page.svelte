@@ -42,16 +42,12 @@
 			navigation.type !== 'goto' &&
 			note.content !== demoContent
 		) {
-			if (id === 'new') {
-				navigation.cancel();
-				debouncedSave?.cancel();
-				saveNote(note).then(() => {
-					window.location = '/note/new'; // Yes I don't like this, but this gives me a blank slate. Otherwise the note data doesn't reset. I can do this differently, but this is the easiest way for now. This is a relatively rare use case (clicking 'new note' when you have an open, but dirty, new note already), so not wasting time overoptimising.
-				});
-			}
-		}
-		if (note.id && debouncedSave.flush) {
-			debouncedSave.flush();
+			navigation.cancel();
+			debouncedSave.cancel();
+			saveNote(note, false).then(() => {
+				window.location = '/note/new';
+				// Yes I don't like this, but this gives me a blank slate. Otherwise the note data doesn't reset. I can do this differently, but this is the easiest way for now. This is a relatively rare use case (clicking 'new note' when you have an open, but dirty, new note already), so not wasting time overoptimising.
+			});
 		}
 	});
 

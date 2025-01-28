@@ -4,7 +4,7 @@ import { sql } from 'kysely';
 
 export const ssr = false;
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 20;
 
 interface PaginationData {
 	notesCount: number;
@@ -19,9 +19,9 @@ export const load: PageLoad = async ({ url, parent }) => {
 		const { db } = await parent();
 		if (!db) return;
 
-		const q = url.searchParams.get('q');
-		const from = url.searchParams.get('from');
-		const tab = url.searchParams.get('tab') || 'notes';
+		const q = url.searchParams.get('deleted_q');
+		const from = url.searchParams.get('deleted_from');
+		const tab = url.searchParams.get('tab') || 'note';
 		const offset = parseInt(from || '0');
 
 		// Get total counts for pagination
@@ -40,7 +40,7 @@ export const load: PageLoad = async ({ url, parent }) => {
 
 		// Only fetch the data for the active tab
 		const notesFromDb =
-			tab === 'notes'
+			tab === 'note'
 				? q
 					? db
 							.selectFrom('notes_search')
@@ -63,7 +63,7 @@ export const load: PageLoad = async ({ url, parent }) => {
 				: Promise.resolve([]);
 
 		const deletedTranscriptions =
-			tab === 'transcriptions'
+			tab === 'transcription'
 				? db
 						.selectFrom('transcription')
 						.selectAll()
