@@ -4,7 +4,9 @@
 	const { db, deletedNotes, deletedTranscriptions, pagination } = $derived(data);
 	import Undo2 from 'lucide-svelte/icons/undo-2';
 	import dayjs from '$lib/utils/dayjs';
+	import { shortcut } from '$lib/utils/shortcut-action';
 	import { goto, invalidateAll } from '$app/navigation';
+	import Search from 'lucide-svelte/icons/search';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 
 	const ITEMS_PER_PAGE = 20;
@@ -101,7 +103,43 @@
 			</ul>
 		</div>
 
-		<div class="flex w-full items-center justify-between px-4 pt-2">
+		<div class="my-2 w-full">
+			<form method="GET" action="" data-sveltekit-keepfocus>
+				<div class="relative">
+					<label for="Search" class="sr-only"> Search </label>
+
+					<input
+						type="text"
+						id="Search"
+						placeholder="Search for..."
+						name="q"
+						data-sveltekit-replacestate
+						use:shortcut={{
+							control: true,
+							code: 'KeyK',
+							callback: (el) => {
+								el.focus();
+							}
+						}}
+						class="w-full rounded-md border-gray-200 px-10 py-2.5 shadow-sm sm:text-sm"
+					/>
+					<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5">
+						<span
+							class="rounded border px-1.5 text-sm text-gray-400 shadow-sm transition-all group-hover:border-primary-500 group-hover:text-primary-500"
+							><kbd>⌘</kbd> <kbd>K</kbd></span
+						>
+					</div>
+					<span class="absolute inset-y-0 left-0 grid w-10 place-content-center">
+						<button type="button" class="text-gray-600 hover:text-gray-700">
+							<span class="sr-only">Search</span>
+
+							<Search />
+						</button>
+					</span>
+				</div>
+			</form>
+		</div>
+		<div class="flex w-full items-center justify-between px-4 pt-1">
 			<div>
 				<input
 					type="checkbox"

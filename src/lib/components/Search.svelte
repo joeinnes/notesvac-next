@@ -8,6 +8,7 @@
 
 	import DeleteNoteModal from './DeleteNoteModal.svelte';
 	import { _fetchMore, _LOAD_LIMIT } from '../../routes/+layout';
+	import { shortcut } from '$lib/utils/shortcut-action';
 
 	const { notes: pageNotes, q, id } = $derived($page.data);
 
@@ -72,10 +73,22 @@
 			bind:value={query}
 			onkeyup={debouncedSearch}
 			data-sveltekit-replacestate
-			class="w-full rounded-md border-gray-200 py-2.5 pe-10 shadow-sm sm:text-sm"
+			use:shortcut={{
+				control: true,
+				code: 'KeyS',
+				callback: (el) => {
+					el.focus();
+				}
+			}}
+			class="w-full rounded-md border-gray-200 px-10 py-2.5 shadow-sm sm:text-sm"
 		/>
-
-		<span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
+		<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5">
+			<span
+				class="rounded border px-1.5 text-sm text-gray-400 shadow-sm transition-all group-hover:border-primary-500 group-hover:text-primary-500"
+				><kbd>⌘</kbd> <kbd>S</kbd></span
+			>
+		</div>
+		<span class="absolute inset-y-0 left-0 grid w-10 place-content-center">
 			<button type="button" class="text-gray-600 hover:text-gray-700">
 				<span class="sr-only">Search</span>
 

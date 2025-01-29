@@ -45,7 +45,7 @@
 			navigation.cancel();
 			debouncedSave.cancel();
 			saveNote(note, false).then(() => {
-				window.location = '/note/new';
+				window.location.assign('/note/new');
 				// Yes I don't like this, but this gives me a blank slate. Otherwise the note data doesn't reset. I can do this differently, but this is the easiest way for now. This is a relatively rare use case (clicking 'new note' when you have an open, but dirty, new note already), so not wasting time overoptimising.
 			});
 		}
